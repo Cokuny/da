@@ -9,15 +9,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Drive Album" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Drive Album (V1.7.0)</title>
+  <title>Drive Album (V1.7.1)</title>
 
-  <!-- 정적 WebAPK 설치를 위한 실제 manifest.json 및 PNG 아이콘 연결 -->
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
   <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png" />
   <link rel="apple-touch-icon" href="./icon-512.png" />
 
-  <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root {
@@ -584,7 +582,6 @@
       transform: scale(1.05);
     }
 
-    /* 동영상 썸네일 배지 & 재생 아이콘 */
     .video-badge-top {
       position: absolute;
       top: 8px;
@@ -699,6 +696,12 @@
       max-width: 540px;
       padding: 22px;
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal.confirm-modal {
+      max-width: 360px;
+      text-align: center;
+      padding: 26px 22px;
     }
 
     .modal h3 {
@@ -859,6 +862,15 @@
       margin-top: 18px;
     }
 
+    .confirm-modal .modal-footer {
+      justify-content: center;
+    }
+
+    .confirm-modal .modal-footer button {
+      flex: 1;
+      padding: 10px 14px;
+    }
+
     .changelog-list {
       max-height: 280px;
       overflow-y: auto;
@@ -897,7 +909,7 @@
       text-decoration: underline;
     }
 
-    /* Lightbox Viewer (이미지 & 동영상 겸용) */
+    /* Lightbox Viewer */
     .lightbox {
       position: fixed;
       inset: 0;
@@ -1030,7 +1042,7 @@
         <img src="./icon-192.png" class="brand-icon" alt="Drive Album" />
         <div class="brand-text-wrap">
           <span class="app-title">Drive Album</span>
-          <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.7.0</span>
+          <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.7.1</span>
         </div>
       </div>
       <div class="header-actions">
@@ -1096,7 +1108,7 @@
       <div class="login-card">
         <img src="./icon-512.png" class="login-app-icon" alt="Drive Album" />
         <h1>Drive Album</h1>
-        <div class="login-version-tag">Version 1.7.0</div>
+        <div class="login-version-tag">Version 1.7.1</div>
         <p>구글 드라이브에 정리된 사진과 동영상을<br>촬영 날짜 기준 월별 타임라인으로 열람합니다.<br>아래 버튼을 누르면 Google 로그인 창이 열립니다.</p>
         <button id="btnMainLogin" class="primary btn-google-login">Google 계정으로 로그인</button>
         <div class="login-sub-action">
@@ -1136,13 +1148,25 @@
   </main>
 
   <footer>
-    Drive Album · <span id="footerVersionLink">V1.7.0 업데이트 내역</span>
+    Drive Album · <span id="footerVersionLink">V1.7.1 업데이트 내역</span>
   </footer>
+
+  <!-- 앱 종료 확인 모달 -->
+  <div id="exitConfirmModal" class="modal-backdrop">
+    <div class="modal confirm-modal">
+      <h3>앱을 종료할까요?</h3>
+      <p class="modal-desc" style="margin-bottom: 18px;">Drive Album을 종료하고 이전 화면으로 돌아갑니다.</p>
+      <div class="modal-footer">
+        <button type="button" id="btnCancelExit">취소</button>
+        <button type="button" id="btnConfirmExit" class="danger">종료</button>
+      </div>
+    </div>
+  </div>
 
   <!-- 폴더 선택 및 계층 탐색 모달 -->
   <div id="folderSelectModal" class="modal-backdrop">
     <div class="modal">
-      <h3>어느 폴더에서 미디어을 불러올까요?</h3>
+      <h3>어느 폴더에서 미디어를 불러올까요?</h3>
       <p class="modal-desc">폴더를 클릭해 선택하거나, 우측 <b>하위 열기 ❯</b> 버튼으로 하위 폴더까지 들어가서 지정할 수 있습니다.</p>
 
       <div class="form-group" style="margin-bottom: 12px;">
@@ -1174,27 +1198,26 @@
   <!-- 버전 정보 모달 -->
   <div id="versionModal" class="modal-backdrop">
     <div class="modal">
-      <h3>Drive Album · V1.7.0</h3>
+      <h3>Drive Album · V1.7.1</h3>
       <p class="modal-desc">Google Drive 폴더 기반 사진·동영상 갤러리 WebAPK 앱입니다.</p>
       <div class="changelog-list">
         <div class="changelog-item">
-          <h4>V1.7.0 (현재 버전)</h4>
+          <h4>V1.7.1 (현재 버전)</h4>
           <ul>
-            <li><b>동영상 조회 및 앱 내 스트리밍 재생 지원:</b> 폴더 내 MP4·MOV 등 동영상 파일을 함께 불러오며, 썸네일에 재생 아이콘 및 재생 시간 배지 표시</li>
-            <li>라이트박스 뷰어에서 인증된 스트리밍으로 동영상을 즉시 재생하고 좌우 화살표로 사진·동영상 연속 탐색 가능</li>
+            <li><b>뒤로가기 단계별 네비게이션 & 앱 종료 확인창:</b> 모달/뷰어 닫기 → 상위 폴더 복귀 → 최상위 화면에서는 <b>앱을 종료할까요?</b> 확인창 표시</li>
+            <li><b>썸네일 자동 복구(Fallback):</b> 고해상도 썸네일 로딩 실패 시 기본 해상도로 자동 재시도하여 이미지 깨짐 방지</li>
           </ul>
         </div>
         <div class="changelog-item">
-          <h4>V1.6.2</h4>
+          <h4>V1.7.0</h4>
           <ul>
-            <li>정렬 선택 드롭다운을 아이콘 버튼으로 변경하고 정렬 기준 팝업 메뉴에서 선택하도록 개선</li>
+            <li>동영상 조회 및 앱 내 스트리밍 재생 지원 (재생 아이콘 및 재생 시간 배지 표시)</li>
           </ul>
         </div>
         <div class="changelog-item">
-          <h4>V1.6.0 ~ V1.6.1</h4>
+          <h4>V1.6.0 ~ V1.6.2</h4>
           <ul>
-            <li>실제 촬영 시점(EXIF 원본 촬영일 → 파일명 내 촬영일시 패턴) 우선 정렬 및 월별 그룹 묶음 지원</li>
-            <li>버튼 클릭 시 로그인 팝업 실행 및 <b>Drive Album</b> 타이틀 하단 버전 배지 배치</li>
+            <li>실제 촬영 시점(EXIF 원본 촬영일 → 파일명 패턴) 우선 정렬, 월별 그룹 묶음 및 아이콘 기반 정렬 메뉴 적용</li>
           </ul>
         </div>
         <div class="changelog-item">
@@ -1261,7 +1284,7 @@
       });
     }
 
-    const APP_VERSION = "V1.7.0";
+    const APP_VERSION = "V1.7.1";
     const DEFAULT_CLIENT_ID = "126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com";
     const SCOPES = "https://www.googleapis.com/auth/drive.readonly";
 
@@ -1283,6 +1306,7 @@
     let videoLoadRequestId = 0;
     let hasLoadedInitialGallery = false;
     let pendingSilentAction = null;
+    let allowRealExit = false;
 
     const el = {
       loginView: document.getElementById("loginView"),
@@ -1312,6 +1336,9 @@
       footerVersionLink: document.getElementById("footerVersionLink"),
       versionModal: document.getElementById("versionModal"),
       btnCloseVersionModal: document.getElementById("btnCloseVersionModal"),
+      exitConfirmModal: document.getElementById("exitConfirmModal"),
+      btnCancelExit: document.getElementById("btnCancelExit"),
+      btnConfirmExit: document.getElementById("btnConfirmExit"),
       folderSelectModal: document.getElementById("folderSelectModal"),
       modalCrumbs: document.getElementById("modalCrumbs"),
       btnSelectCurrentModalDir: document.getElementById("btnSelectCurrentModalDir"),
@@ -1335,6 +1362,73 @@
       lbPrev: document.getElementById("lbPrev"),
       lbNext: document.getElementById("lbNext"),
       lbClose: document.getElementById("lbClose")
+    };
+
+    function pushHistoryGuard() {
+      history.pushState({ driveAlbumGuard: true }, "", window.location.href);
+    }
+
+    pushHistoryGuard();
+
+    window.addEventListener("popstate", () => {
+      if (allowRealExit) return;
+
+      if (el.sortMenu.classList.contains("open")) {
+        closeSortMenu();
+        pushHistoryGuard();
+        return;
+      }
+
+      if (el.lightbox.classList.contains("open")) {
+        closeLightbox();
+        pushHistoryGuard();
+        return;
+      }
+
+      if (el.versionModal.classList.contains("open")) {
+        el.versionModal.classList.remove("open");
+        pushHistoryGuard();
+        return;
+      }
+      if (el.clientModal.classList.contains("open")) {
+        el.clientModal.classList.remove("open");
+        pushHistoryGuard();
+        return;
+      }
+      if (el.folderSelectModal.classList.contains("open") && hasLoadedInitialGallery) {
+        el.folderSelectModal.classList.remove("open");
+        pushHistoryGuard();
+        return;
+      }
+      if (el.exitConfirmModal.classList.contains("open")) {
+        el.exitConfirmModal.classList.remove("open");
+        pushHistoryGuard();
+        return;
+      }
+
+      if (!el.galleryView.classList.contains("hidden") && folderStack.length > 1) {
+        folderStack.pop();
+        const prevFolder = folderStack[folderStack.length - 1];
+        loadFolder(prevFolder.id);
+        pushHistoryGuard();
+        return;
+      }
+
+      el.exitConfirmModal.classList.add("open");
+      pushHistoryGuard();
+    });
+
+    el.btnCancelExit.onclick = () => {
+      el.exitConfirmModal.classList.remove("open");
+    };
+
+    el.btnConfirmExit.onclick = () => {
+      allowRealExit = true;
+      el.exitConfirmModal.classList.remove("open");
+      history.go(-2);
+      setTimeout(() => {
+        window.close();
+      }, 150);
     };
 
     function syncSortMenuUI() {
@@ -1798,25 +1892,46 @@
       return thumbnailLink.replace(/=s\d+$/, `=s${size}`);
     }
 
+    function handleThumbError(imgEl, rawThumbUrl, isVideo, fileName) {
+      if (!imgEl.dataset.retried && rawThumbUrl && imgEl.src !== rawThumbUrl) {
+        imgEl.dataset.retried = "1";
+        imgEl.src = rawThumbUrl;
+        return;
+      }
+      const holder = document.createElement("div");
+      holder.className = "video-placeholder";
+      holder.innerHTML = isVideo
+        ? `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+             <polygon points="5 3 19 12 5 21 5 3"></polygon>
+           </svg>
+           <span style="font-size:0.73rem; word-break:break-all;">${fileName}</span>`
+        : `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+             <circle cx="8.5" cy="8.5" r="1.5"></circle>
+             <polyline points="21 15 16 10 5 21"></polyline>
+           </svg>
+           <span style="font-size:0.73rem; word-break:break-all;">${fileName}</span>`;
+      imgEl.replaceWith(holder);
+    }
+
     function createMediaCardElement(item, globalIdx) {
       const card = document.createElement("div");
       card.className = "photo-card";
-      const thumbUrl = getHighResThumbnail(item.thumbnailLink, 500);
+      const rawThumb = item.thumbnailLink || "";
+      const thumbUrl = getHighResThumbnail(rawThumb, 500);
       const labelPrefix = item._dateSource ? `${item._dateSource}: ` : "";
 
       if (item._isVideo) {
         const badgeLabel = item._durationText ? `▶ ${item._durationText}` : "▶ 동영상";
-        const thumbHtml = thumbUrl
-          ? `<img src="${thumbUrl}" alt="${item.name}" loading="lazy" />`
-          : `<div class="video-placeholder">
-               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
-               </svg>
-               <span style="font-size:0.75rem; word-break:break-all;">${item.name}</span>
-             </div>`;
-
         card.innerHTML = `
-          ${thumbHtml}
+          ${thumbUrl
+            ? `<img alt="${item.name}" loading="lazy" />`
+            : `<div class="video-placeholder">
+                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                   <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                 </svg>
+                 <span style="font-size:0.73rem; word-break:break-all;">${item.name}</span>
+               </div>`}
           <span class="video-badge-top">${badgeLabel}</span>
           <div class="video-play-center">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-left:2px;">
@@ -1830,12 +1945,27 @@
         `;
       } else {
         card.innerHTML = `
-          <img src="${thumbUrl}" alt="${item.name}" loading="lazy" />
+          ${thumbUrl
+            ? `<img alt="${item.name}" loading="lazy" />`
+            : `<div class="video-placeholder">
+                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                   <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                   <polyline points="21 15 16 10 5 21"></polyline>
+                 </svg>
+                 <span style="font-size:0.73rem; word-break:break-all;">${item.name}</span>
+               </div>`}
           <div class="photo-overlay">
             <div class="photo-title">${item.name}</div>
             <div class="photo-date">${labelPrefix}${item._dateStr}</div>
           </div>
         `;
+      }
+
+      const imgEl = card.querySelector("img");
+      if (imgEl && thumbUrl) {
+        imgEl.onerror = () => handleThumbError(imgEl, rawThumb, item._isVideo, item.name);
+        imgEl.src = thumbUrl;
       }
 
       card.onclick = () => openLightbox(globalIdx);
@@ -2056,7 +2186,13 @@
       } else {
         el.lbVideoWrap.classList.add("hidden");
         el.lbImage.classList.remove("hidden");
-        el.lbImage.src = getHighResThumbnail(item.thumbnailLink, 2048);
+        const rawThumb = item.thumbnailLink || "";
+        el.lbImage.onerror = () => {
+          if (rawThumb && el.lbImage.src !== rawThumb) {
+            el.lbImage.src = rawThumb;
+          }
+        };
+        el.lbImage.src = getHighResThumbnail(rawThumb, 2048);
       }
     }
 
@@ -2141,7 +2277,12 @@
     el.lbNext.onclick = nextMedia;
 
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeSortMenu();
+      if (e.key === "Escape") {
+        closeSortMenu();
+        if (el.exitConfirmModal.classList.contains("open")) {
+          el.exitConfirmModal.classList.remove("open");
+        }
+      }
       if (!el.lightbox.classList.contains("open")) return;
       if (e.key === "Escape") closeLightbox();
       if (e.key === "ArrowLeft") prevMedia();
