@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="application-name" content="드라이브 앨범" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="드라이브 앨범" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Drive Photo Album</title>
+
+  <!-- PWA 아이콘 & Manifest 동적 등록 (단일 HTML 파일만으로 갤럭시 홈 화면 설치 지원) -->
+  <link id="pwa-manifest" rel="manifest" />
+  <link id="pwa-icon" rel="icon" type="image/png" />
+  <link id="apple-icon" rel="apple-touch-icon" />
+  <script>
+    (function setupPwaManifest() {
+      // 512x512 전용 앨범 아이콘 생성
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext("2d");
+
+      // 배경 그라데이션 (파란색~인디고 계열로 기존 차계부 아이콘과 명확히 구분)
+      const grad = ctx.createLinearGradient(0, 0, 512, 512);
+      grad.addColorStop(0, "#2563eb");
+      grad.addColorStop(1, "#1e3a8a");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, 512, 512, 112);
+      ctx.fill();
+
+      // 앨범 프레임 외곽선
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 26;
+      ctx.lineJoin = "round";
+      ctx.strokeRect(106, 126, 300, 260);
+
+      // 태양(원)
+      ctx.fillStyle = "#fde047";
+      ctx.beginPath();
+      ctx.arc(185, 202, 28, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 산 풍경 실루엣
+      ctx.fillStyle = "#93c5fd";
+      ctx.beginPath();
+      ctx.moveTo(118, 374);
+      ctx.lineTo(225, 255);
+      ctx.lineTo(295, 325);
+      ctx.lineTo(340, 275);
+      ctx.lineTo(394, 374);
+      ctx.closePath();
+      ctx.fill();
+
+      const iconDataUrl = canvas.toDataURL("image/png");
+      document.getElementById("pwa-icon").href = iconDataUrl;
+      document.getElementById("apple-icon").href = iconDataUrl;
+
+      // 현재 페이지 경로를 기준으로 고유 start_url 및 id 설정
+      const baseUrl = window.location.origin + window.location.pathname;
+      const manifestObj = {
+        id: window.location.pathname,
+        name: "Drive Photo Album",
+        short_name: "드라이브 앨범",
+        description: "Google Drive 폴더 기반 사진 앨범 뷰어",
+        start_url: baseUrl,
+        scope: baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1),
+        display: "standalone",
+        background_color: "#0f172a",
+        theme_color: "#0f172a",
+        orientation: "any",
+        icons: [
+          {
+            src: iconDataUrl,
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable"
+          }
+        ]
+      };
+
+      const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: "application/manifest+json" });
+      document.getElementById("pwa-manifest").href = URL.createObjectURL(manifestBlob);
+    })();
+  </script>
+
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-card: #1e293b;
+      --bg-hover: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --border: #334155;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background-color: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .header-top {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand svg {
+      color: var(--accent);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    button:hover {
+      background-color: var(--bg-hover);
+    }
+
+    button.primary {
+      background-color: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    button.primary:hover {
+      background-color: var(--accent-hover);
+    }
+
+    button.danger {
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    button.danger:hover {
+      background-color: rgba(239, 68, 68, 0.15);
+    }
+
+    /* Toolbar & Breadcrumb */
+    .toolbar {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.9rem;
+    }
+
+    .crumb-item {
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+
+    .crumb-item:hover {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .crumb-item.active {
+      color: var(--text-primary);
+      font-weight: 600;
+      cursor: default;
+    }
+
+    .crumb-sep {
+      color: var(--text-secondary);
+      user-select: none;
+    }
+
+    .search-box {
+      position: relative;
+      min-width: 220px;
+      flex: 1;
+      max-width: 320px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent);
+    }
+
+    /* Main Content */
+    main {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px 16px 60px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Login Landing Page */
+    .login-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      text-align: center;
+      padding: 44px 32px;
+      width: 100%;
+      max-width: 440px;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .login-icon {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 18px;
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-card h1 {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .login-card p {
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      margin-bottom: 26px;
+    }
+
+    .btn-google-login {
+      width: 100%;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 10px;
+    }
+
+    .login-sub-action {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .center-box {
+      text-align: center;
+      padding: 60px 20px;
+      max-width: 440px;
+      margin: 40px auto;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .center-box h2 {
+      font-size: 1.25rem;
+      margin-bottom: 10px;
+    }
+
+    .center-box p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .spinner {
+      width: 34px;
+      height: 34px;
+      border: 3px solid rgba(59, 130, 246, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 14px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Section & Grids */
+    .section-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .folder-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .folder-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s, background-color 0.15s;
+    }
+
+    .folder-card:hover {
+      background-color: var(--bg-hover);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .folder-icon {
+      color: #60a5fa;
+      flex-shrink: 0;
+    }
+
+    .folder-info {
+      overflow: hidden;
+    }
+
+    .folder-name {
+      font-size: 0.92rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .folder-meta {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+    }
+
+    @media (min-width: 768px) {
+      .photo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 14px;
+      }
+    }
+
+    .photo-card {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      background-color: var(--bg-secondary);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 1px solid var(--border);
+    }
+
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.25s ease;
+      display: block;
+    }
+
+    .photo-card:hover img {
+      transform: scale(1.05);
+    }
+
+    .photo-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 45%);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 10px;
+    }
+
+    .photo-card:hover .photo-overlay {
+      opacity: 1;
+    }
+
+    .photo-title {
+      font-size: 0.78rem;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Modal (Folder Picker & Settings) */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 8, 15, 0.82);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 520px;
+      padding: 22px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal h3 {
+      margin-bottom: 6px;
+      font-size: 1.15rem;
+    }
+
+    .modal-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.45;
+    }
+
+    .quick-folder-list {
+      max-height: 210px;
+      overflow-y: auto;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .quick-folder-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      border: 1px solid transparent;
+      transition: background 0.15s;
+    }
+
+    .quick-folder-item:hover {
+      background-color: var(--bg-secondary);
+    }
+
+    .quick-folder-item.selected {
+      background-color: rgba(59, 130, 246, 0.18);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .quick-folder-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    .quick-folder-left span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: var(--accent);
+    }
+
+    .form-hint {
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      margin-top: 6px;
+      line-height: 1.45;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    /* Lightbox Viewer */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(5, 8, 15, 0.96);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    .lightbox.open {
+      display: flex;
+    }
+
+    .lb-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+      z-index: 102;
+    }
+
+    .lb-info {
+      overflow: hidden;
+      padding-right: 12px;
+    }
+
+    .lb-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lb-counter {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    .lb-body {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 10px;
+    }
+
+    .lb-body img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 4px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .lb-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 102;
+    }
+
+    .lb-nav:hover {
+      background: rgba(59, 130, 246, 0.85);
+    }
+
+    .lb-prev { left: 16px; }
+    .lb-next { right: 16px; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-top">
+      <div class="brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+        <span>Drive Photo Album</span>
+      </div>
+      <div class="header-actions">
+        <button id="btnChangeFolder" class="hidden" title="불러올 기준 폴더 변경">📁 폴더 변경</button>
+        <button id="btnRefresh" class="hidden" title="새로고침">🔄 새로고침</button>
+        <button id="btnClientSettings" title="OAuth Client ID 설정">⚙️ API 설정</button>
+        <button id="btnLogout" class="danger hidden">로그아웃</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Breadcrumb & Search Toolbar -->
+  <div id="toolbar" class="toolbar hidden">
+    <nav id="breadcrumb" class="breadcrumb"></nav>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="현재 폴더 내 이름 검색..." />
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main id="mainContainer">
+    <!-- 1. 초기 로그인 화면 -->
+    <div id="loginView" class="login-wrapper">
+      <div class="login-card">
+        <div class="login-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+        </div>
+        <h1>Drive Photo Album</h1>
+        <p>구글 드라이브에 정리된 사진 폴더를<br>계층 구조 그대로 앨범처럼 열람합니다.<br>로그인 후 불러올 폴더를 선택할 수 있습니다.</p>
+        <button id="btnMainLogin" class="primary btn-google-login">Google 계정으로 로그인</button>
+        <div class="login-sub-action">
+          읽기 전용 권한(drive.readonly)만 사용하므로 원본 파일은 수정되지 않습니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading View -->
+    <div id="loadingView" class="center-box hidden">
+      <div class="spinner"></div>
+      <p id="loadingText">구글 드라이브 정보를 불러오는 중...</p>
+    </div>
+
+    <!-- Gallery View -->
+    <div id="galleryView" class="hidden">
+      <div id="folderSection">
+        <div class="section-title">
+          <span>폴더 (앨범)</span>
+          <span id="folderCount">0개</span>
+        </div>
+        <div id="folderGrid" class="folder-grid"></div>
+      </div>
+
+      <div id="photoSection">
+        <div class="section-title">
+          <span>사진</span>
+          <span id="photoCount">0장</span>
+        </div>
+        <div id="photoGrid" class="photo-grid"></div>
+      </div>
+
+      <div id="emptyFolderMsg" class="center-box hidden">
+        <h2>표시할 항목이 없습니다</h2>
+        <p>이 폴더에 하위 폴더나 이미지 파일이 없거나 검색 조건과 일치하지 않습니다.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- 2. 로그인 직후 폴더 선택/확인 모달 -->
+  <div id="folderSelectModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>어느 폴더에서 사진을 불러올까요?</h3>
+      <p class="modal-desc">아래 목록에서 폴더를 선택하거나, 특정 Google Drive 폴더 URL 또는 ID를 직접 입력해 주세요.</p>
+
+      <div class="form-group">
+        <label>내 드라이브 최상위 폴더 빠른 선택</label>
+        <div id="quickFolderList" class="quick-folder-list">
+          <div style="padding:12px; text-align:center; color:var(--text-secondary); font-size:0.85rem;">폴더 목록 조회 중...</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="inputTargetFolder">선택된 폴더 ID 또는 Google Drive 폴더 링크</label>
+        <input type="text" id="inputTargetFolder" placeholder="비워두면 내 드라이브 전체(root)에서 시작" />
+        <div class="form-hint">
+          • 팁: 하위 폴더를 시작점으로 삼으려면 구글 드라이브에서 해당 폴더를 연 뒤 주소창 URL을 그대로 붙여넣으세요.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btnCancelFolderSelect" class="hidden">취소</button>
+        <button id="btnConfirmFolderSelect" class="primary">이 폴더 불러오기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OAuth Client ID 설정 모달 -->
+  <div id="clientModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Google OAuth Client ID 설정</h3>
+      <p class="modal-desc">기본 내장된 Client ID 대신 다른 Google Cloud 프로젝트 ID를 사용할 경우 변경합니다.</p>
+      <div class="form-group">
+        <label for="inputClientId">OAuth 2.0 Client ID</label>
+        <input type="text" id="inputClientId" />
+      </div>
+      <div class="modal-footer">
+        <button id="btnCloseClientModal">닫기</button>
+        <button id="btnSaveClientModal" class="primary">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox Modal -->
+  <div id="lightbox" class="lightbox">
+    <div class="lb-header">
+      <div class="lb-info">
+        <div id="lbTitle" class="lb-title">파일명.jpg</div>
+        <div id="lbCounter" class="lb-counter">1 / 10</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <a id="lbDriveLink" href="#" target="_blank" rel="noopener" style="text-decoration:none;">
+          <button type="button">원본 열기 ↗</button>
+        </a>
+        <button id="lbClose" class="danger">✕ 닫기</button>
+      </div>
+    </div>
+    <div class="lb-body" id="lbBody">
+      <button class="lb-nav lb-prev" id="lbPrev" title="이전 (←)">❮</button>
+      <img id="lbImage" src="" alt="" />
+      <button class="lb-nav lb-next" id="lbNext" title="다음 (→)">❯</button>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_CLIENT_ID = "126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com";
+    const SCOPES = "https://www.googleapis.com/auth/drive.readonly";
+
+    let tokenClient = null;
+    let accessToken = sessionStorage.getItem("gd_album_token") || null;
+    let clientId = localStorage.getItem("gd_album_client_id") || DEFAULT_CLIENT_ID;
+    let savedRootFolderId = localStorage.getItem("gd_album_root_id") || "";
+
+    // 탐색 상태
+    let folderStack = [];
+    let currentFolders = [];
+    let currentPhotos = [];
+    let filteredPhotos = [];
+    let currentPhotoIndex = 0;
+    let hasLoadedInitialGallery = false;
+
+    const el = {
+      loginView: document.getElementById("loginView"),
+      loadingView: document.getElementById("loadingView"),
+      loadingText: document.getElementById("loadingText"),
+      galleryView: document.getElementById("galleryView"),
+      toolbar: document.getElementById("toolbar"),
+      breadcrumb: document.getElementById("breadcrumb"),
+      searchInput: document.getElementById("searchInput"),
+      folderSection: document.getElementById("folderSection"),
+      folderGrid: document.getElementById("folderGrid"),
+      folderCount: document.getElementById("folderCount"),
+      photoSection: document.getElementById("photoSection"),
+      photoGrid: document.getElementById("photoGrid"),
+      photoCount: document.getElementById("photoCount"),
+      emptyFolderMsg: document.getElementById("emptyFolderMsg"),
+      btnMainLogin: document.getElementById("btnMainLogin"),
+      btnLogout: document.getElementById("btnLogout"),
+      btnRefresh: document.getElementById("btnRefresh"),
+      btnChangeFolder: document.getElementById("btnChangeFolder"),
+      btnClientSettings: document.getElementById("btnClientSettings"),
+      folderSelectModal: document.getElementById("folderSelectModal"),
+      quickFolderList: document.getElementById("quickFolderList"),
+      inputTargetFolder: document.getElementById("inputTargetFolder"),
+      btnConfirmFolderSelect: document.getElementById("btnConfirmFolderSelect"),
+      btnCancelFolderSelect: document.getElementById("btnCancelFolderSelect"),
+      clientModal: document.getElementById("clientModal"),
+      inputClientId: document.getElementById("inputClientId"),
+      btnCloseClientModal: document.getElementById("btnCloseClientModal"),
+      btnSaveClientModal: document.getElementById("btnSaveClientModal"),
+      lightbox: document.getElementById("lightbox"),
+      lbBody: document.getElementById("lbBody"),
+      lbImage: document.getElementById("lbImage"),
+      lbTitle: document.getElementById("lbTitle"),
+      lbCounter: document.getElementById("lbCounter"),
+      lbDriveLink: document.getElementById("lbDriveLink"),
+      lbPrev: document.getElementById("lbPrev"),
+      lbNext: document.getElementById("lbNext"),
+      lbClose: document.getElementById("lbClose")
+    };
+
+    function extractFolderId(input) {
+      if (!input || !input.trim()) return "root";
+      const val = input.trim();
+      const match = val.match(/folders\/([a-zA-Z0-9_-]+)/) || val.match(/id=([a-zA-Z0-9_-]+)/);
+      return match ? match[1] : val;
+    }
+
+    function initGis() {
+      if (!window.google || !google.accounts) {
+        setTimeout(initGis, 300);
+        return;
+      }
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: SCOPES,
+        callback: (resp) => {
+          if (resp.error) {
+            alert("로그인 오류: " + resp.error);
+            return;
+          }
+          accessToken = resp.access_token;
+          sessionStorage.setItem("gd_album_token", accessToken);
+          onLoginSuccess();
+        }
+      });
+
+      if (accessToken) {
+        onLoginSuccess();
+      }
+    }
+
+    function handleLogin() {
+      if (!tokenClient) return;
+      tokenClient.requestAccessToken({ prompt: "" });
+    }
+
+    function handleLogout() {
+      if (accessToken && window.google) {
+        google.accounts.oauth2.revoke(accessToken, () => {});
+      }
+      accessToken = null;
+      hasLoadedInitialGallery = false;
+      sessionStorage.removeItem("gd_album_token");
+      el.btnLogout.classList.add("hidden");
+      el.btnRefresh.classList.add("hidden");
+      el.btnChangeFolder.classList.add("hidden");
+      el.toolbar.classList.add("hidden");
+      el.galleryView.classList.add("hidden");
+      el.loadingView.classList.add("hidden");
+      el.folderSelectModal.classList.remove("open");
+      el.loginView.classList.remove("hidden");
+    }
+
+    function onLoginSuccess() {
+      el.loginView.classList.add("hidden");
+      el.btnLogout.classList.remove("hidden");
+      el.btnChangeFolder.classList.remove("hidden");
+      openFolderSelectorModal(false);
+    }
+
+    async function fetchDriveApi(url) {
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (res.status === 401) {
+        handleLogout();
+        throw new Error("인증 세션이 만료되었습니다. 다시 로그인해 주세요.");
+      }
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error?.message || `API 오류 (${res.status})`);
+      }
+      return res.json();
+    }
+
+    async function openFolderSelectorModal(allowCancel) {
+      el.inputTargetFolder.value = savedRootFolderId === "root" ? "" : savedRootFolderId;
+      if (allowCancel && hasLoadedInitialGallery) {
+        el.btnCancelFolderSelect.classList.remove("hidden");
+      } else {
+        el.btnCancelFolderSelect.classList.add("hidden");
+      }
+
+      el.folderSelectModal.classList.add("open");
+      el.quickFolderList.innerHTML = `<div style="padding:12px; text-align:center; color:var(--text-secondary); font-size:0.85rem;">내 드라이브 폴더 목록을 불러오는 중...</div>`;
+
+      try {
+        const q = `'root' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'`;
+        const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&orderBy=name&pageSize=100`;
+        const data = await fetchDriveApi(url);
+        const folders = data.files || [];
+
+        renderQuickFolderList(folders);
+      } catch (err) {
+        el.quickFolderList.innerHTML = `<div style="padding:12px; text-align:center; color:#fca5a5; font-size:0.83rem;">목록을 불러오지 못했습니다. 아래에 폴더 ID나 링크를 직접 입력해 주세요.</div>`;
+      }
+    }
+
+    function renderQuickFolderList(folders) {
+      el.quickFolderList.innerHTML = "";
+      const currentTarget = extractFolderId(el.inputTargetFolder.value);
+
+      const rootItem = document.createElement("div");
+      rootItem.className = "quick-folder-item" + (currentTarget === "root" ? " selected" : "");
+      rootItem.innerHTML = `
+        <div class="quick-folder-left">
+          <span>🏠 내 드라이브 전체 (최상위)</span>
+        </div>
+      `;
+      rootItem.onclick = () => {
+        el.inputTargetFolder.value = "";
+        highlightSelectedQuickItem(rootItem);
+      };
+      el.quickFolderList.appendChild(rootItem);
+
+      folders.forEach(f => {
+        const item = document.createElement("div");
+        item.className = "quick-folder-item" + (currentTarget === f.id ? " selected" : "");
+        item.innerHTML = `
+          <div class="quick-folder-left">
+            <span>📁 ${f.name}</span>
+          </div>
+        `;
+        item.onclick = () => {
+          el.inputTargetFolder.value = f.id;
+          highlightSelectedQuickItem(item);
+        };
+        el.quickFolderList.appendChild(item);
+      });
+    }
+
+    function highlightSelectedQuickItem(selectedEl) {
+      document.querySelectorAll(".quick-folder-item").forEach(node => node.classList.remove("selected"));
+      selectedEl.classList.add("selected");
+    }
+
+    async function confirmAndLoadRoot() {
+      const targetId = extractFolderId(el.inputTargetFolder.value);
+      savedRootFolderId = targetId;
+      localStorage.setItem("gd_album_root_id", savedRootFolderId);
+
+      el.folderSelectModal.classList.remove("open");
+      el.toolbar.classList.remove("hidden");
+      el.btnRefresh.classList.remove("hidden");
+
+      let rootName = "내 드라이브";
+      if (targetId !== "root") {
+        try {
+          const meta = await fetchDriveApi(`https://www.googleapis.com/drive/v3/files/${targetId}?fields=id,name`);
+          if (meta && meta.name) rootName = meta.name;
+        } catch (e) {
+          rootName = "선택된 폴더";
+        }
+      }
+
+      hasLoadedInitialGallery = true;
+      folderStack = [{ id: targetId, name: rootName }];
+      loadFolder(targetId);
+    }
+
+    async function loadFolder(folderId) {
+      el.galleryView.classList.add("hidden");
+      el.loadingView.classList.remove("hidden");
+      el.searchInput.value = "";
+      renderBreadcrumb();
+
+      try {
+        let allItems = [];
+        let pageToken = "";
+        const q = `'${folderId}' in parents and trashed = false and (mimeType = 'application/vnd.google-apps.folder' or mimeType contains 'image/')`;
+        const fields = "nextPageToken, files(id, name, mimeType, thumbnailLink, webViewLink, createdTime, modifiedTime)";
+
+        do {
+          const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=${encodeURIComponent(fields)}&orderBy=folder,name&pageSize=200${pageToken ? `&pageToken=${pageToken}` : ""}`;
+          const data = await fetchDriveApi(url);
+          allItems = allItems.concat(data.files || []);
+          pageToken = data.nextPageToken || "";
+        } while (pageToken);
+
+        currentFolders = allItems.filter(f => f.mimeType === "application/vnd.google-apps.folder");
+        currentPhotos = allItems.filter(f => f.mimeType !== "application/vnd.google-apps.folder");
+
+        renderItems();
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        el.loadingView.classList.add("hidden");
+        el.galleryView.classList.remove("hidden");
+      }
+    }
+
+    function renderBreadcrumb() {
+      el.breadcrumb.innerHTML = "";
+      folderStack.forEach((item, idx) => {
+        const span = document.createElement("span");
+        span.className = "crumb-item" + (idx === folderStack.length - 1 ? " active" : "");
+        span.textContent = item.name;
+        if (idx < folderStack.length - 1) {
+          span.onclick = () => {
+            folderStack = folderStack.slice(0, idx + 1);
+            loadFolder(item.id);
+          };
+        }
+        el.breadcrumb.appendChild(span);
+
+        if (idx < folderStack.length - 1) {
+          const sep = document.createElement("span");
+          sep.className = "crumb-sep";
+          sep.textContent = "/";
+          el.breadcrumb.appendChild(sep);
+        }
+      });
+    }
+
+    function getHighResThumbnail(thumbnailLink, size = 600) {
+      if (!thumbnailLink) return "";
+      return thumbnailLink.replace(/=s\d+$/, `=s${size}`);
+    }
+
+    function renderItems() {
+      const keyword = el.searchInput.value.trim().toLowerCase();
+
+      const visFolders = keyword
+        ? currentFolders.filter(f => f.name.toLowerCase().includes(keyword))
+        : currentFolders;
+
+      filteredPhotos = keyword
+        ? currentPhotos.filter(p => p.name.toLowerCase().includes(keyword))
+        : currentPhotos;
+
+      el.folderGrid.innerHTML = "";
+      if (visFolders.length > 0) {
+        el.folderSection.classList.remove("hidden");
+        el.folderCount.textContent = `${visFolders.length}개`;
+        visFolders.forEach(folder => {
+          const card = document.createElement("div");
+          card.className = "folder-card";
+          const dateStr = folder.modifiedTime ? folder.modifiedTime.slice(0, 10) : "";
+          card.innerHTML = `
+            <svg class="folder-icon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+            </svg>
+            <div class="folder-info">
+              <div class="folder-name" title="${folder.name}">${folder.name}</div>
+              <div class="folder-meta">${dateStr}</div>
+            </div>
+          `;
+          card.onclick = () => {
+            folderStack.push({ id: folder.id, name: folder.name });
+            loadFolder(folder.id);
+          };
+          el.folderGrid.appendChild(card);
+        });
+      } else {
+        el.folderSection.classList.add("hidden");
+      }
+
+      el.photoGrid.innerHTML = "";
+      if (filteredPhotos.length > 0) {
+        el.photoSection.classList.remove("hidden");
+        el.photoCount.textContent = `${filteredPhotos.length}장`;
+        filteredPhotos.forEach((photo, idx) => {
+          const card = document.createElement("div");
+          card.className = "photo-card";
+          const thumbUrl = getHighResThumbnail(photo.thumbnailLink, 500);
+          card.innerHTML = `
+            <img src="${thumbUrl}" alt="${photo.name}" loading="lazy" />
+            <div class="photo-overlay">
+              <div class="photo-title">${photo.name}</div>
+            </div>
+          `;
+          card.onclick = () => openLightbox(idx);
+          el.photoGrid.appendChild(card);
+        });
+      } else {
+        el.photoSection.classList.add("hidden");
+      }
+
+      if (visFolders.length === 0 && filteredPhotos.length === 0) {
+        el.emptyFolderMsg.classList.remove("hidden");
+      } else {
+        el.emptyFolderMsg.classList.add("hidden");
+      }
+    }
+
+    function openLightbox(index) {
+      currentPhotoIndex = index;
+      updateLightbox();
+      el.lightbox.classList.add("open");
+    }
+
+    function closeLightbox() {
+      el.lightbox.classList.remove("open");
+      el.lbImage.src = "";
+    }
+
+    function updateLightbox() {
+      const photo = filteredPhotos[currentPhotoIndex];
+      if (!photo) return;
+      el.lbTitle.textContent = photo.name;
+      el.lbCounter.textContent = `${currentPhotoIndex + 1} / ${filteredPhotos.length}`;
+      el.lbDriveLink.href = photo.webViewLink || `https://drive.google.com/file/d/${photo.id}/view`;
+      el.lbImage.src = getHighResThumbnail(photo.thumbnailLink, 2048);
+    }
+
+    function prevPhoto() {
+      if (filteredPhotos.length === 0) return;
+      currentPhotoIndex = (currentPhotoIndex - 1 + filteredPhotos.length) % filteredPhotos.length;
+      updateLightbox();
+    }
+
+    function nextPhoto() {
+      if (filteredPhotos.length === 0) return;
+      currentPhotoIndex = (currentPhotoIndex + 1) % filteredPhotos.length;
+      updateLightbox();
+    }
+
+    // 이벤트 연결
+    el.btnMainLogin.onclick = handleLogin;
+    el.btnLogout.onclick = handleLogout;
+    el.btnRefresh.onclick = () => {
+      const current = folderStack[folderStack.length - 1];
+      if (current) loadFolder(current.id);
+    };
+    el.btnChangeFolder.onclick = () => openFolderSelectorModal(true);
+    el.btnConfirmFolderSelect.onclick = confirmAndLoadRoot;
+    el.btnCancelFolderSelect.onclick = () => el.folderSelectModal.classList.remove("open");
+    el.searchInput.oninput = renderItems;
+
+    // Client ID 모달
+    el.btnClientSettings.onclick = () => {
+      el.inputClientId.value = clientId;
+      el.clientModal.classList.add("open");
+    };
+    el.btnCloseClientModal.onclick = () => el.clientModal.classList.remove("open");
+    el.btnSaveClientModal.onclick = () => {
+      clientId = el.inputClientId.value.trim() || DEFAULT_CLIENT_ID;
+      localStorage.setItem("gd_album_client_id", clientId);
+      el.clientModal.classList.remove("open");
+      initGis();
+    };
+
+    // 라이트박스 제어
+    el.lbClose.onclick = closeLightbox;
+    el.lbPrev.onclick = prevPhoto;
+    el.lbNext.onclick = nextPhoto;
+
+    document.addEventListener("keydown", (e) => {
+      if (!el.lightbox.classList.contains("open")) return;
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") prevPhoto();
+      if (e.key === "ArrowRight") nextPhoto();
+    });
+
+    let touchStartX = 0;
+    el.lbBody.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    el.lbBody.addEventListener("touchend", (e) => {
+      const diff = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) prevPhoto();
+        else nextPhoto();
+      }
+    }, { passive: true });
+
+    window.onload = initGis;
+  </script>
+</body>
+</html>
