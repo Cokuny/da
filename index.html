@@ -1237,3 +1237,531 @@
     function handleLogout() {
       if (accessToken && window.google) {
         google.accounts.oauth2.revoke(accessToken, () => {});
+      }
+      accessToken = null;
+      tokenExpiry = 0;
+      wasLoggedIn = false;
+      hasLoadedInitialGallery = false;
+      localStorage.removeItem("gd_album_token");
+      localStorage.removeItem("gd_album_token_expiry");
+      localStorage.removeItem("gd_album_logged_in");
+
+      el.btnLogout.classList.add("hidden");
+      el.btnRefresh.classList.add("hidden");
+      el.btnChangeFolder.classList.add("hidden");
+      el.toolbar.classList.add("hidden");
+      el.galleryView.classList.add("hidden");
+      el.loadingView.classList.add("hidden");
+      el.folderSelectModal.classList.remove("open");
+      el.loginView.classList.remove("hidden");
+    }
+
+    function onLoginSuccess() {
+      el.loginView.classList.add("hidden");
+      el.loadingView.classList.add("hidden");
+      el.btnLogout.classList.remove("hidden");
+      el.btnChangeFolder.classList.remove("hidden");
+      openFolderSelectorModal(false);
+    }
+
+    function onAutoResumeLogin() {
+      el.loginView.classList.add("hidden");
+      el.loadingView.classList.add("hidden");
+      el.btnLogout.classList.remove("hidden");
+      el.btnChangeFolder.classList.remove("hidden");
+      if (savedRootFolderId) {
+        el.inputTargetFolder.value = savedRootFolderId === "root" ? "" : savedRootFolderId;
+        confirmAndLoadRoot();
+      } else {
+        openFolderSelectorModal(false);
+      }
+    }
+
+    function refreshAccessTokenSilently() {
+      return new Promise((resolve, reject) => {
+        if (!tokenClient) {
+          reject(new Error("Google 인증 클라이언트가 준비되지 않았습니다."));
+          return;
+        }
+        pendingSilentAction = () => resolve();
+        tokenClient.requestAccessToken({ prompt: "" });
+      });
+    }
+
+    async function fetchDriveApi(url, retry = true) {
+      if (!isTokenValid() && wasLoggedIn && retry) {
+        await refreshAccessTokenSilently();
+      }
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (res.status === 401) {
+        if (retry && wasLoggedIn) {
+          await refreshAccessTokenSilently();
+          return fetchDriveApi(url, false);
+        }
+        handleLogout();
+        throw new Error("인증 세션이 만료되었습니다. 다시 로그인해 주세요.");
+      }
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error?.message || `API 오류 (${res.status})`);
+      }
+      return res.json();
+    }
+
+    async function openFolderSelectorModal(allowCancel) {
+      el.inputTargetFolder.value = savedRootFolderId === "root" ? "" : savedRootFolderId;
+      if (allowCancel && hasLoadedInitialGallery) {
+        el.btnCancelFolderSelect.classList.remove("hidden");
+      } else {
+        el.btnCancelFolderSelect.classList.add("hidden");
+      }
+
+      modalBrowseStack = [{ id: "root", name: "내 드라이브" }];
+      el.folderSelectModal.classList.add("open");
+      await loadModalFolderList("root");
+    }
+
+    function renderModalBreadcrumbs() {
+      el.modalCrumbs.innerHTML = "";
+      modalBrowseStack.forEach((item, idx) => {
+        const span = document.createElement("span");
+        span.className = "modal-crumb" + (idx === modalBrowseStack.length - 1 ? " active" : "");
+        span.textContent = item.name;
+        if (idx < modalBrowseStack.length - 1) {
+          span.onclick = () => {
+            modalBrowseStack = modalBrowseStack.slice(0, idx + 1);
+            loadModalFolderList(item.id);
+          };
+        }
+        el.modalCrumbs.appendChild(span);
+
+        if (idx < modalBrowseStack.length - 1) {
+          const sep = document.createElement("span");
+          sep.style.color = "var(--text-secondary)";
+          sep.textContent = "/";
+          el.modalCrumbs.appendChild(sep);
+        }
+      });
+    }
+
+    async function loadModalFolderList(parentId) {
+      renderModalBreadcrumbs();
+      el.quickFolderList.innerHTML = `<div style="padding:14px; text-align:center; color:var(--text-secondary); font-size:0.85rem;">하위 폴더 목록을 불러오는 중...</div>`;
+
+      try {
+        const q = `'${parentId}' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'`;
+        const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&orderBy=name&pageSize=100`;
+        const data = await fetchDriveApi(url);
+        const folders = data.files || [];
+
+        renderQuickFolderList(folders, parentId);
+      } catch (err) {
+        el.quickFolderList.innerHTML = `<div style="padding:12px; text-align:center; color:#fca5a5; font-size:0.83rem;">목록을 불러오지 못했습니다. 아래에 폴더 ID나 링크를 직접 입력해 주세요.</div>`;
+      }
+    }
+
+    function renderQuickFolderList(folders, parentId) {
+      el.quickFolderList.innerHTML = "";
+      const currentTarget = extractFolderId(el.inputTargetFolder.value);
+
+      const currentDirObj = modalBrowseStack[modalBrowseStack.length - 1];
+      const selfItem = document.createElement("div");
+      selfItem.className = "quick-folder-item" + (currentTarget === currentDirObj.id ? " selected" : "");
+      selfItem.innerHTML = `
+        <div class="quick-folder-left">
+          <span>${parentId === "root" ? "🏠 내 드라이브 전체 (최상위)" : "📂 [현재 폴더] " + currentDirObj.name}</span>
+        </div>
+      `;
+      selfItem.onclick = () => {
+        el.inputTargetFolder.value = parentId === "root" ? "" : parentId;
+        highlightSelectedQuickItem(selfItem);
+      };
+      el.quickFolderList.appendChild(selfItem);
+
+      if (folders.length === 0) {
+        const emptyNotice = document.createElement("div");
+        emptyNotice.style.cssText = "padding:12px; text-align:center; color:var(--text-secondary); font-size:0.82rem;";
+        emptyNotice.textContent = "이 폴더 안에 더 이상 하위 폴더가 없습니다.";
+        el.quickFolderList.appendChild(emptyNotice);
+        return;
+      }
+
+      folders.forEach(f => {
+        const item = document.createElement("div");
+        item.className = "quick-folder-item" + (currentTarget === f.id ? " selected" : "");
+
+        const leftDiv = document.createElement("div");
+        leftDiv.className = "quick-folder-left";
+        leftDiv.innerHTML = `<span>📁 ${f.name}</span>`;
+
+        const enterBtn = document.createElement("button");
+        enterBtn.type = "button";
+        enterBtn.className = "btn-enter-subfolder";
+        enterBtn.textContent = "하위 열기 ❯";
+        enterBtn.onclick = (e) => {
+          e.stopPropagation();
+          el.inputTargetFolder.value = f.id;
+          modalBrowseStack.push({ id: f.id, name: f.name });
+          loadModalFolderList(f.id);
+        };
+
+        item.onclick = () => {
+          el.inputTargetFolder.value = f.id;
+          highlightSelectedQuickItem(item);
+        };
+
+        item.ondblclick = () => {
+          el.inputTargetFolder.value = f.id;
+          modalBrowseStack.push({ id: f.id, name: f.name });
+          loadModalFolderList(f.id);
+        };
+
+        item.appendChild(leftDiv);
+        item.appendChild(enterBtn);
+        el.quickFolderList.appendChild(item);
+      });
+    }
+
+    function highlightSelectedQuickItem(selectedEl) {
+      document.querySelectorAll(".quick-folder-item").forEach(node => node.classList.remove("selected"));
+      selectedEl.classList.add("selected");
+    }
+
+    async function confirmAndLoadRoot() {
+      const targetId = extractFolderId(el.inputTargetFolder.value);
+      savedRootFolderId = targetId;
+      localStorage.setItem("gd_album_root_id", savedRootFolderId);
+
+      el.folderSelectModal.classList.remove("open");
+      el.toolbar.classList.remove("hidden");
+      el.btnRefresh.classList.remove("hidden");
+
+      let rootName = "내 드라이브";
+      if (targetId !== "root") {
+        try {
+          const meta = await fetchDriveApi(`https://www.googleapis.com/drive/v3/files/${targetId}?fields=id,name`);
+          if (meta && meta.name) rootName = meta.name;
+        } catch (e) {
+          rootName = "선택된 폴더";
+        }
+      }
+
+      hasLoadedInitialGallery = true;
+      folderStack = [{ id: targetId, name: rootName }];
+      loadFolder(targetId);
+    }
+
+    async function loadFolder(folderId) {
+      el.galleryView.classList.add("hidden");
+      el.loadingView.classList.remove("hidden");
+      el.loadingText.textContent = "구글 드라이브 폴더와 사진 날짜 정보를 불러오는 중...";
+      renderBreadcrumb();
+
+      try {
+        let allItems = [];
+        let pageToken = "";
+        const q = `'${folderId}' in parents and trashed = false and (mimeType = 'application/vnd.google-apps.folder' or mimeType contains 'image/')`;
+        const fields = "nextPageToken, files(id, name, mimeType, thumbnailLink, webViewLink, createdTime, modifiedTime, imageMediaMetadata(time))";
+
+        do {
+          const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=${encodeURIComponent(fields)}&orderBy=folder,name&pageSize=200${pageToken ? `&pageToken=${pageToken}` : ""}`;
+          const data = await fetchDriveApi(url);
+          allItems = allItems.concat(data.files || []);
+          pageToken = data.nextPageToken || "";
+        } while (pageToken);
+
+        currentFolders = allItems.filter(f => f.mimeType === "application/vnd.google-apps.folder");
+        currentPhotos = allItems
+          .filter(f => f.mimeType !== "application/vnd.google-apps.folder")
+          .map(p => {
+            const parsedDate = parsePhotoDate(p);
+            const monthInfo = getMonthKeyAndLabel(parsedDate);
+            return {
+              ...p,
+              _parsedDate: parsedDate,
+              _timestamp: parsedDate.getTime(),
+              _dateStr: formatDateYMD(parsedDate),
+              _monthKey: monthInfo.key,
+              _monthLabel: monthInfo.label
+            };
+          });
+
+        renderItems();
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        el.loadingView.classList.add("hidden");
+        el.galleryView.classList.remove("hidden");
+      }
+    }
+
+    function renderBreadcrumb() {
+      el.breadcrumb.innerHTML = "";
+      folderStack.forEach((item, idx) => {
+        const span = document.createElement("span");
+        span.className = "crumb-item" + (idx === folderStack.length - 1 ? " active" : "");
+        span.textContent = item.name;
+        if (idx < folderStack.length - 1) {
+          span.onclick = () => {
+            folderStack = folderStack.slice(0, idx + 1);
+            loadFolder(item.id);
+          };
+        }
+        el.breadcrumb.appendChild(span);
+
+        if (idx < folderStack.length - 1) {
+          const sep = document.createElement("span");
+          sep.className = "crumb-sep";
+          sep.textContent = "/";
+          el.breadcrumb.appendChild(sep);
+        }
+      });
+    }
+
+    function getHighResThumbnail(thumbnailLink, size = 600) {
+      if (!thumbnailLink) return "";
+      return thumbnailLink.replace(/=s\d+$/, `=s${size}`);
+    }
+
+    function createPhotoCardElement(photo, globalIdx) {
+      const card = document.createElement("div");
+      card.className = "photo-card";
+      const thumbUrl = getHighResThumbnail(photo.thumbnailLink, 500);
+      card.innerHTML = `
+        <img src="${thumbUrl}" alt="${photo.name}" loading="lazy" />
+        <div class="photo-overlay">
+          <div class="photo-title">${photo.name}</div>
+          <div class="photo-date">${photo._dateStr}</div>
+        </div>
+      `;
+      card.onclick = () => openLightbox(globalIdx);
+      return card;
+    }
+
+    function renderItems() {
+      const visFolders = currentFolders;
+      let photos = [...currentPhotos];
+
+      if (sortOrder === "date-desc") {
+        photos.sort((a, b) => b._timestamp - a._timestamp || a.name.localeCompare(b.name));
+      } else if (sortOrder === "date-asc") {
+        photos.sort((a, b) => a._timestamp - b._timestamp || a.name.localeCompare(b.name));
+      } else {
+        photos.sort((a, b) => a.name.localeCompare(b.name));
+      }
+
+      filteredPhotos = photos;
+
+      el.folderGrid.innerHTML = "";
+      if (visFolders.length > 0) {
+        el.folderSection.classList.remove("hidden");
+        el.folderCount.textContent = `${visFolders.length}개`;
+        visFolders.forEach(folder => {
+          const card = document.createElement("div");
+          card.className = "folder-card";
+          const dateStr = folder.modifiedTime ? folder.modifiedTime.slice(0, 10) : "";
+          card.innerHTML = `
+            <svg class="folder-icon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+            </svg>
+            <div class="folder-info">
+              <div class="folder-name" title="${folder.name}">${folder.name}</div>
+              <div class="folder-meta">${dateStr}</div>
+            </div>
+          `;
+          card.onclick = () => {
+            folderStack.push({ id: folder.id, name: folder.name });
+            loadFolder(folder.id);
+          };
+          el.folderGrid.appendChild(card);
+        });
+      } else {
+        el.folderSection.classList.add("hidden");
+      }
+
+      el.photoContainer.innerHTML = "";
+      el.monthJumpBar.innerHTML = "";
+
+      if (filteredPhotos.length > 0) {
+        el.photoSection.classList.remove("hidden");
+        el.photoCount.textContent = `${filteredPhotos.length}장`;
+
+        if (sortOrder === "name-asc") {
+          el.monthJumpBar.classList.add("hidden");
+          const grid = document.createElement("div");
+          grid.className = "photo-grid";
+          filteredPhotos.forEach((photo, idx) => {
+            grid.appendChild(createPhotoCardElement(photo, idx));
+          });
+          el.photoContainer.appendChild(grid);
+        } else {
+          const groups = [];
+          const groupMap = new Map();
+
+          filteredPhotos.forEach((photo, idx) => {
+            if (!groupMap.has(photo._monthKey)) {
+              const g = { key: photo._monthKey, label: photo._monthLabel, items: [] };
+              groupMap.set(photo._monthKey, g);
+              groups.push(g);
+            }
+            groupMap.get(photo._monthKey).items.push({ photo, globalIdx: idx });
+          });
+
+          if (groups.length > 1) {
+            el.monthJumpBar.classList.remove("hidden");
+            groups.forEach(g => {
+              const chip = document.createElement("button");
+              chip.type = "button";
+              chip.className = "month-chip";
+              chip.textContent = `${g.label} (${g.items.length})`;
+              chip.onclick = () => {
+                const targetEl = document.getElementById(`month-sec-${g.key}`);
+                if (targetEl) {
+                  targetEl.classList.remove("collapsed");
+                  targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              };
+              el.monthJumpBar.appendChild(chip);
+            });
+          } else {
+            el.monthJumpBar.classList.add("hidden");
+          }
+
+          groups.forEach(g => {
+            const section = document.createElement("section");
+            section.className = "month-group";
+            section.id = `month-sec-${g.key}`;
+
+            const header = document.createElement("div");
+            header.className = "month-header";
+            header.title = "클릭하여 접기/펼치기";
+            header.innerHTML = `
+              <div class="month-header-left">
+                <span class="month-toggle-icon">▼</span>
+                <span>${g.label}</span>
+              </div>
+              <span class="month-count-badge">${g.items.length}장</span>
+            `;
+            header.onclick = () => section.classList.toggle("collapsed");
+
+            const grid = document.createElement("div");
+            grid.className = "photo-grid";
+            g.items.forEach(({ photo, globalIdx }) => {
+              grid.appendChild(createPhotoCardElement(photo, globalIdx));
+            });
+
+            section.appendChild(header);
+            section.appendChild(grid);
+            el.photoContainer.appendChild(section);
+          });
+        }
+      } else {
+        el.photoSection.classList.add("hidden");
+        el.monthJumpBar.classList.add("hidden");
+      }
+
+      if (visFolders.length === 0 && filteredPhotos.length === 0) {
+        el.emptyFolderMsg.classList.remove("hidden");
+      } else {
+        el.emptyFolderMsg.classList.add("hidden");
+      }
+    }
+
+    function openLightbox(index) {
+      currentPhotoIndex = index;
+      updateLightbox();
+      el.lightbox.classList.add("open");
+    }
+
+    function closeLightbox() {
+      el.lightbox.classList.remove("open");
+      el.lbImage.src = "";
+    }
+
+    function updateLightbox() {
+      const photo = filteredPhotos[currentPhotoIndex];
+      if (!photo) return;
+      el.lbTitle.textContent = photo.name;
+      el.lbCounter.textContent = `${currentPhotoIndex + 1} / ${filteredPhotos.length}  ·  ${photo._dateStr}`;
+      el.lbDriveLink.href = photo.webViewLink || `https://drive.google.com/file/d/${photo.id}/view`;
+      el.lbImage.src = getHighResThumbnail(photo.thumbnailLink, 2048);
+    }
+
+    function prevPhoto() {
+      if (filteredPhotos.length === 0) return;
+      currentPhotoIndex = (currentPhotoIndex - 1 + filteredPhotos.length) % filteredPhotos.length;
+      updateLightbox();
+    }
+
+    function nextPhoto() {
+      if (filteredPhotos.length === 0) return;
+      currentPhotoIndex = (currentPhotoIndex + 1) % filteredPhotos.length;
+      updateLightbox();
+    }
+
+    el.btnMainLogin.onclick = handleLogin;
+    el.btnLogout.onclick = handleLogout;
+    el.btnRefresh.onclick = () => {
+      const current = folderStack[folderStack.length - 1];
+      if (current) loadFolder(current.id);
+    };
+    el.btnChangeFolder.onclick = () => openFolderSelectorModal(true);
+    el.btnSelectCurrentModalDir.onclick = () => {
+      const currentDirObj = modalBrowseStack[modalBrowseStack.length - 1];
+      el.inputTargetFolder.value = currentDirObj.id === "root" ? "" : currentDirObj.id;
+      loadModalFolderList(currentDirObj.id);
+    };
+    el.btnConfirmFolderSelect.onclick = confirmAndLoadRoot;
+    el.btnCancelFolderSelect.onclick = () => el.folderSelectModal.classList.remove("open");
+    el.sortSelect.onchange = () => {
+      sortOrder = el.sortSelect.value;
+      localStorage.setItem("gd_album_sort_order", sortOrder);
+      renderItems();
+    };
+
+    el.versionBadge.onclick = () => el.versionModal.classList.add("open");
+    el.footerVersionLink.onclick = () => el.versionModal.classList.add("open");
+    el.btnCloseVersionModal.onclick = () => el.versionModal.classList.remove("open");
+
+    el.btnClientSettings.onclick = () => {
+      el.inputClientId.value = clientId;
+      el.clientModal.classList.add("open");
+    };
+    el.btnCloseClientModal.onclick = () => el.clientModal.classList.remove("open");
+    el.btnSaveClientModal.onclick = () => {
+      clientId = el.inputClientId.value.trim() || DEFAULT_CLIENT_ID;
+      localStorage.setItem("gd_album_client_id", clientId);
+      el.clientModal.classList.remove("open");
+      initGis();
+    };
+
+    el.lbClose.onclick = closeLightbox;
+    el.lbPrev.onclick = prevPhoto;
+    el.lbNext.onclick = nextPhoto;
+
+    document.addEventListener("keydown", (e) => {
+      if (!el.lightbox.classList.contains("open")) return;
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") prevPhoto();
+      if (e.key === "ArrowRight") nextPhoto();
+    });
+
+    let touchStartX = 0;
+    el.lbBody.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    el.lbBody.addEventListener("touchend", (e) => {
+      const diff = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) prevPhoto();
+        else nextPhoto();
+      }
+    }, { passive: true });
+
+    window.onload = initGis;
+  </script>
+</body>
+</html>
