@@ -9,46 +9,175 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="드라이브 앨범" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Drive Photo Album (V1.4.0)</title>
+  <title>Drive Photo Album (V1.4.1)</title>
 
-  <!-- PWA 아이콘 & Manifest 동적 등록 -->
+  <!-- 고해상도 스퀴클 PWA 아이콘 & Manifest 동적 등록 -->
   <link id="pwa-manifest" rel="manifest" />
   <link id="pwa-icon" rel="icon" type="image/png" />
   <link id="apple-icon" rel="apple-touch-icon" />
   <script>
     (function setupPwaManifest() {
+      const size = 512;
       const canvas = document.createElement("canvas");
-      canvas.width = 512;
-      canvas.height = 512;
+      canvas.width = size;
+      canvas.height = size;
       const ctx = canvas.getContext("2d");
 
-      const grad = ctx.createLinearGradient(0, 0, 512, 512);
-      grad.addColorStop(0, "#2563eb");
-      grad.addColorStop(1, "#1e3a8a");
-      ctx.fillStyle = grad;
+      // 1. 깊고 세련된 딥 인디고~블루 그라데이션 배경
+      const bgGrad = ctx.createLinearGradient(0, 0, size, size);
+      bgGrad.addColorStop(0, "#1d4ed8");
+      bgGrad.addColorStop(0.55, "#1e3a8a");
+      bgGrad.addColorStop(1, "#0f172a");
+      ctx.fillStyle = bgGrad;
       ctx.beginPath();
-      ctx.roundRect(0, 0, 512, 512, 112);
+      ctx.roundRect(0, 0, size, size, 118);
       ctx.fill();
 
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 26;
-      ctx.lineJoin = "round";
-      ctx.strokeRect(106, 126, 300, 260);
-
-      ctx.fillStyle = "#fde047";
+      // 상단 은은한 하이라이트 글로우
+      const glow = ctx.createRadialGradient(140, 110, 20, 140, 110, 340);
+      glow.addColorStop(0, "rgba(96, 165, 250, 0.35)");
+      glow.addColorStop(1, "rgba(96, 165, 250, 0)");
+      ctx.fillStyle = glow;
       ctx.beginPath();
-      ctx.arc(185, 202, 28, 0, Math.PI * 2);
+      ctx.roundRect(0, 0, size, size, 118);
       ctx.fill();
 
-      ctx.fillStyle = "#93c5fd";
+      // 2. 뒤쪽 폴라로이드 사진 카드 (살짝 기울어진 레이어)
+      ctx.save();
+      ctx.translate(275, 252);
+      ctx.rotate(11 * Math.PI / 180);
+      ctx.shadowColor = "rgba(0, 0, 0, 0.32)";
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 12;
+      ctx.fillStyle = "rgba(255, 255, 255, 0.22)";
       ctx.beginPath();
-      ctx.moveTo(118, 374);
-      ctx.lineTo(225, 255);
-      ctx.lineTo(295, 325);
-      ctx.lineTo(340, 275);
-      ctx.lineTo(394, 374);
+      ctx.roundRect(-125, -135, 250, 270, 28);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.restore();
+
+      // 3. 메인 폴라로이드 프레임 (화이트 글래스 카드)
+      ctx.save();
+      ctx.translate(244, 258);
+      ctx.rotate(-6 * Math.PI / 180);
+
+      ctx.shadowColor = "rgba(0, 0, 0, 0.42)";
+      ctx.shadowBlur = 32;
+      ctx.shadowOffsetY = 16;
+
+      const cardGrad = ctx.createLinearGradient(0, -140, 0, 145);
+      cardGrad.addColorStop(0, "#ffffff");
+      cardGrad.addColorStop(1, "#e2e8f0");
+      ctx.fillStyle = cardGrad;
+      ctx.beginPath();
+      ctx.roundRect(-132, -142, 264, 284, 32);
+      ctx.fill();
+
+      // 그림자 초기화 후 내부 사진 캔버스 영역 그리기
+      ctx.shadowColor = "transparent";
+      const photoGrad = ctx.createLinearGradient(-108, -118, 108, 72);
+      photoGrad.addColorStop(0, "#38bdf8");
+      photoGrad.addColorStop(0.5, "#3b82f6");
+      photoGrad.addColorStop(1, "#6366f1");
+      ctx.fillStyle = photoGrad;
+      ctx.beginPath();
+      ctx.roundRect(-108, -118, 216, 186, 18);
+      ctx.fill();
+
+      // 클리핑 영역 내부에 태양과 입체 산맥 그리기
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(-108, -118, 216, 186, 18);
+      ctx.clip();
+
+      // 따뜻한 골드 선셋 태양
+      const sunGrad = ctx.createRadialGradient(-48, -62, 4, -48, -62, 34);
+      sunGrad.addColorStop(0, "#fef08a");
+      sunGrad.addColorStop(0.7, "#facc15");
+      sunGrad.addColorStop(1, "rgba(250, 204, 21, 0)");
+      ctx.fillStyle = sunGrad;
+      ctx.beginPath();
+      ctx.arc(-48, -62, 34, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 뒤쪽 연한 산 실루엣
+      ctx.fillStyle = "rgba(224, 242, 254, 0.55)";
+      ctx.beginPath();
+      ctx.moveTo(-120, 74);
+      ctx.lineTo(-10, -28);
+      ctx.lineTo(65, 38);
+      ctx.lineTo(120, 74);
       ctx.closePath();
       ctx.fill();
+
+      // 앞쪽 선명한 화이트-스카이 산 실루엣
+      const mtnGrad = ctx.createLinearGradient(0, -15, 0, 74);
+      mtnGrad.addColorStop(0, "#ffffff");
+      mtnGrad.addColorStop(1, "#bae6fd");
+      ctx.fillStyle = mtnGrad;
+      ctx.beginPath();
+      ctx.moveTo(-115, 74);
+      ctx.lineTo(-42, 2);
+      ctx.lineTo(18, 52);
+      ctx.lineTo(62, -12);
+      ctx.lineTo(118, 74);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // 폴라로이드 하단 여백 미니 포인트 바
+      ctx.fillStyle = "#94a3b8";
+      ctx.beginPath();
+      ctx.roundRect(-64, 92, 86, 12, 6);
+      ctx.fill();
+
+      ctx.fillStyle = "#3b82f6";
+      ctx.beginPath();
+      ctx.roundRect(34, 92, 30, 12, 6);
+      ctx.fill();
+
+      ctx.restore();
+
+      // 4. 우측 하단 Google Drive 컬러 포인트 배지
+      ctx.save();
+      ctx.translate(378, 378);
+      ctx.shadowColor = "rgba(0, 0, 0, 0.38)";
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetY = 6;
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(0, 0, 54, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.shadowColor = "transparent";
+      // 드라이브 삼각 리본 아이콘 (초록 / 노랑 / 파랑)
+      ctx.lineWidth = 13;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      // 좌측 변 (초록)
+      ctx.strokeStyle = "#22c55e";
+      ctx.beginPath();
+      ctx.moveTo(-2, -24);
+      ctx.lineTo(-24, 15);
+      ctx.stroke();
+
+      // 우측 변 (노랑)
+      ctx.strokeStyle = "#eab308";
+      ctx.beginPath();
+      ctx.moveTo(2, -24);
+      ctx.lineTo(24, 15);
+      ctx.stroke();
+
+      // 하단 변 (파랑)
+      ctx.strokeStyle = "#3b82f6";
+      ctx.beginPath();
+      ctx.moveTo(-20, 20);
+      ctx.lineTo(20, 20);
+      ctx.stroke();
+      ctx.restore();
 
       const iconDataUrl = canvas.toDataURL("image/png");
       document.getElementById("pwa-icon").href = iconDataUrl;
@@ -71,7 +200,13 @@
             src: iconDataUrl,
             sizes: "512x512",
             type: "image/png",
-            purpose: "any maskable"
+            purpose: "any"
+          },
+          {
+            src: iconDataUrl,
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable"
           }
         ]
       };
@@ -142,9 +277,12 @@
       letter-spacing: -0.02em;
     }
 
-    .brand svg {
-      color: var(--accent);
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
       flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
     }
 
     .version-badge {
@@ -331,16 +469,13 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
     }
 
-    .login-icon {
-      width: 60px;
-      height: 60px;
+    .login-app-icon {
+      width: 76px;
+      height: 76px;
       margin: 0 auto 18px;
-      background: rgba(59, 130, 246, 0.15);
-      color: var(--accent);
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      border-radius: 18px;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.45);
+      display: block;
     }
 
     .login-card h1 {
@@ -475,7 +610,6 @@
       margin-top: 2px;
     }
 
-    /* 월별 빠른 이동 인덱스 바 */
     .month-jump-bar {
       display: flex;
       align-items: center;
@@ -505,7 +639,6 @@
       background-color: var(--bg-hover);
     }
 
-    /* 월별 그룹 섹션 */
     .month-group {
       margin-bottom: 30px;
       scroll-margin-top: 76px;
@@ -811,7 +944,6 @@
       margin-top: 18px;
     }
 
-    /* Version History List */
     .changelog-list {
       max-height: 280px;
       overflow-y: auto;
@@ -850,7 +982,6 @@
       text-decoration: underline;
     }
 
-    /* Lightbox Viewer */
     .lightbox {
       position: fixed;
       inset: 0;
@@ -942,13 +1073,9 @@
   <header>
     <div class="header-top">
       <div class="brand">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-          <polyline points="21 15 16 10 5 21"></polyline>
-        </svg>
+        <img id="headerBrandIcon" class="brand-icon" alt="Drive Photo Album" />
         <span>Drive Photo Album</span>
-        <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.4.0</span>
+        <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.4.1</span>
       </div>
       <div class="header-actions">
         <button id="btnChangeFolder" class="hidden" title="불러올 기준 폴더 변경">📁 폴더 변경</button>
@@ -976,15 +1103,9 @@
   <main id="mainContainer">
     <div id="loginView" class="login-wrapper">
       <div class="login-card">
-        <div class="login-icon">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-            <polyline points="21 15 16 10 5 21"></polyline>
-          </svg>
-        </div>
+        <img id="loginAppIcon" class="login-app-icon" alt="Drive Photo Album" />
         <h1>Drive Photo Album</h1>
-        <div class="login-version-tag">Version 1.4.0</div>
+        <div class="login-version-tag">Version 1.4.1</div>
         <p>구글 드라이브에 정리된 사진 폴더를<br>월별 타임라인과 계층 구조 그대로 열람합니다.<br>한 번 로그인하면 브라우저를 닫아도 유지됩니다.</p>
         <button id="btnMainLogin" class="primary btn-google-login">Google 계정으로 로그인</button>
         <div class="login-sub-action">
@@ -1012,9 +1133,7 @@
           <span>사진</span>
           <span id="photoCount">0장</span>
         </div>
-        <!-- 월별 빠른 이동 칩 -->
         <div id="monthJumpBar" class="month-jump-bar hidden"></div>
-        <!-- 월별 그룹 컨테이너 -->
         <div id="photoContainer"></div>
       </div>
 
@@ -1026,7 +1145,7 @@
   </main>
 
   <footer>
-    Drive Photo Album · <span id="footerVersionLink">V1.4.0 업데이트 내역</span>
+    Drive Photo Album · <span id="footerVersionLink">V1.4.1 업데이트 내역</span>
   </footer>
 
   <!-- 폴더 선택 및 계층 탐색 모달 -->
@@ -1064,23 +1183,28 @@
   <!-- 버전 정보 모달 -->
   <div id="versionModal" class="modal-backdrop">
     <div class="modal">
-      <h3>Drive Photo Album · V1.4.0</h3>
+      <h3>Drive Photo Album · V1.4.1</h3>
       <p class="modal-desc">Google Drive 폴더 기반 전용 사진 갤러리 PWA 웹 앱입니다.</p>
       <div class="changelog-list">
         <div class="changelog-item">
-          <h4>V1.4.0 (현재 버전)</h4>
+          <h4>V1.4.1 (현재 버전)</h4>
+          <ul>
+            <li>입체 폴라로이드 사진 카드 & Google Drive 컬러 배지가 적용된 고해상도 스퀴클 앱 아이콘 업그레이드</li>
+            <li>상단 헤더 및 로그인 화면에 전용 앱 아이콘 일체화 적용</li>
+          </ul>
+        </div>
+        <div class="changelog-item">
+          <h4>V1.4.0</h4>
           <ul>
             <li>사진 촬영일(EXIF) 및 생성일 기준 날짜순 자동 정렬(최신순/오래된순/파일명순) 추가</li>
             <li>연·월별(YYYY년 MM월) 그룹 묶음 보기, 섹션 접기/펼치기 및 상단 월별 빠른 이동 바 지원</li>
-            <li>라이트박스 뷰어 상단에 사진 촬영·등록 날짜 정보 표시</li>
           </ul>
         </div>
         <div class="changelog-item">
           <h4>V1.3.0</h4>
           <ul>
-            <li>버전 배지(V1.3.0) 및 업데이트 내역 팝업 추가</li>
-            <li>폴더 선택/변경 창 내 다단계 하위 폴더 탐색(하위 열기 ❯) 지원</li>
-            <li>로그인 상태 영구 유지 및 토큰 만료 시 자동 복원 처리</li>
+            <li>버전 배지 및 업데이트 내역 팝업 추가</li>
+            <li>폴더 선택/변경 창 내 다단계 하위 폴더 탐색(하위 열기 ❯) 및 로그인 상태 영구 유지</li>
           </ul>
         </div>
         <div class="changelog-item">
@@ -1090,15 +1214,9 @@
           </ul>
         </div>
         <div class="changelog-item">
-          <h4>V1.1.0</h4>
+          <h4>V1.1.0 ~ V1.0.0</h4>
           <ul>
-            <li>로그인 직후 불러올 폴더 선택/확인 팝업 및 빠른 폴더 선택 목록 추가</li>
-          </ul>
-        </div>
-        <div class="changelog-item">
-          <h4>V1.0.0</h4>
-          <ul>
-            <li>Google Drive 읽기 전용(drive.readonly) 폴더 계층 갤러리 및 라이트박스 뷰어 최초 구현</li>
+            <li>로그인 직후 폴더 선택/확인 팝업, Google Drive 읽기 전용 계층 갤러리 및 라이트박스 뷰어 구현</li>
           </ul>
         </div>
       </div>
@@ -1146,7 +1264,16 @@
   </div>
 
   <script>
-    const APP_VERSION = "V1.4.0";
+    // 생성된 앱 아이콘을 헤더와 로그인 화면에도 즉시 연결
+    (function syncBrandIcons() {
+      const iconHref = document.getElementById("pwa-icon").href;
+      if (iconHref) {
+        document.getElementById("headerBrandIcon").src = iconHref;
+        document.getElementById("loginAppIcon").src = iconHref;
+      }
+    })();
+
+    const APP_VERSION = "V1.4.1";
     const DEFAULT_CLIENT_ID = "126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com";
     const SCOPES = "https://www.googleapis.com/auth/drive.readonly";
 
@@ -1224,7 +1351,6 @@
       return match ? match[1] : val;
     }
 
-    // EXIF 촬영일시(YYYY:MM:DD HH:MM:SS) 우선, 없으면 파일 생성일/수정일 반환
     function parsePhotoDate(photo) {
       const exifTime = photo.imageMediaMetadata && photo.imageMediaMetadata.time;
       if (exifTime) {
@@ -1635,7 +1761,6 @@
         ? currentPhotos.filter(p => p.name.toLowerCase().includes(keyword) || p._dateStr.includes(keyword))
         : [...currentPhotos];
 
-      // 정렬 적용
       if (sortOrder === "date-desc") {
         photos.sort((a, b) => b._timestamp - a._timestamp || a.name.localeCompare(b.name));
       } else if (sortOrder === "date-asc") {
@@ -1646,7 +1771,6 @@
 
       filteredPhotos = photos;
 
-      // 폴더 렌더링
       el.folderGrid.innerHTML = "";
       if (visFolders.length > 0) {
         el.folderSection.classList.remove("hidden");
@@ -1674,7 +1798,6 @@
         el.folderSection.classList.add("hidden");
       }
 
-      // 사진 렌더링 (월별 그룹 또는 단일 그리드)
       el.photoContainer.innerHTML = "";
       el.monthJumpBar.innerHTML = "";
 
@@ -1691,7 +1814,6 @@
           });
           el.photoContainer.appendChild(grid);
         } else {
-          // 월별 그룹핑
           const groups = [];
           const groupMap = new Map();
 
@@ -1704,7 +1826,6 @@
             groupMap.get(photo._monthKey).items.push({ photo, globalIdx: idx });
           });
 
-          // 월별 빠른 이동 칩 바 표시 (2개 이상 월이 있을 때)
           if (groups.length > 1) {
             el.monthJumpBar.classList.remove("hidden");
             groups.forEach(g => {
@@ -1725,7 +1846,6 @@
             el.monthJumpBar.classList.add("hidden");
           }
 
-          // 월별 섹션 렌더링
           groups.forEach(g => {
             const section = document.createElement("section");
             section.className = "month-group";
@@ -1819,7 +1939,6 @@
       renderItems();
     };
 
-    // 버전 모달 제어
     el.versionBadge.onclick = () => el.versionModal.classList.add("open");
     el.footerVersionLink.onclick = () => el.versionModal.classList.add("open");
     el.btnCloseVersionModal.onclick = () => el.versionModal.classList.remove("open");
