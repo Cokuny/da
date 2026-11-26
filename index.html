@@ -9,208 +9,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Work Album" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Work Album (V1.5.0)</title>
+  <title>Work Album (V1.5.1)</title>
 
-  <!-- 고해상도 스퀴클 PWA 아이콘 & Manifest 동적 등록 -->
-  <link id="pwa-manifest" rel="manifest" />
-  <link id="pwa-icon" rel="icon" type="image/png" />
-  <link id="apple-icon" rel="apple-touch-icon" />
-  <script>
-    (function setupPwaManifest() {
-      const size = 512;
-      const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d");
-
-      // 1. 깊고 세련된 딥 인디고~블루 그라데이션 배경
-      const bgGrad = ctx.createLinearGradient(0, 0, size, size);
-      bgGrad.addColorStop(0, "#1d4ed8");
-      bgGrad.addColorStop(0.55, "#1e3a8a");
-      bgGrad.addColorStop(1, "#0f172a");
-      ctx.fillStyle = bgGrad;
-      ctx.beginPath();
-      ctx.roundRect(0, 0, size, size, 118);
-      ctx.fill();
-
-      // 상단 은은한 하이라이트 글로우
-      const glow = ctx.createRadialGradient(140, 110, 20, 140, 110, 340);
-      glow.addColorStop(0, "rgba(96, 165, 250, 0.35)");
-      glow.addColorStop(1, "rgba(96, 165, 250, 0)");
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.roundRect(0, 0, size, size, 118);
-      ctx.fill();
-
-      // 2. 뒤쪽 폴라로이드 사진 카드 (살짝 기울어진 레이어)
-      ctx.save();
-      ctx.translate(275, 252);
-      ctx.rotate(11 * Math.PI / 180);
-      ctx.shadowColor = "rgba(0, 0, 0, 0.32)";
-      ctx.shadowBlur = 24;
-      ctx.shadowOffsetY = 12;
-      ctx.fillStyle = "rgba(255, 255, 255, 0.22)";
-      ctx.beginPath();
-      ctx.roundRect(-125, -135, 250, 270, 28);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      ctx.restore();
-
-      // 3. 메인 폴라로이드 프레임 (화이트 글래스 카드)
-      ctx.save();
-      ctx.translate(244, 258);
-      ctx.rotate(-6 * Math.PI / 180);
-
-      ctx.shadowColor = "rgba(0, 0, 0, 0.42)";
-      ctx.shadowBlur = 32;
-      ctx.shadowOffsetY = 16;
-
-      const cardGrad = ctx.createLinearGradient(0, -140, 0, 145);
-      cardGrad.addColorStop(0, "#ffffff");
-      cardGrad.addColorStop(1, "#e2e8f0");
-      ctx.fillStyle = cardGrad;
-      ctx.beginPath();
-      ctx.roundRect(-132, -142, 264, 284, 32);
-      ctx.fill();
-
-      // 그림자 초기화 후 내부 사진 캔버스 영역 그리기
-      ctx.shadowColor = "transparent";
-      const photoGrad = ctx.createLinearGradient(-108, -118, 108, 72);
-      photoGrad.addColorStop(0, "#38bdf8");
-      photoGrad.addColorStop(0.5, "#3b82f6");
-      photoGrad.addColorStop(1, "#6366f1");
-      ctx.fillStyle = photoGrad;
-      ctx.beginPath();
-      ctx.roundRect(-108, -118, 216, 186, 18);
-      ctx.fill();
-
-      // 클리핑 영역 내부에 태양과 입체 산맥 그리기
-      ctx.save();
-      ctx.beginPath();
-      ctx.roundRect(-108, -118, 216, 186, 18);
-      ctx.clip();
-
-      // 따뜻한 골드 선셋 태양
-      const sunGrad = ctx.createRadialGradient(-48, -62, 4, -48, -62, 34);
-      sunGrad.addColorStop(0, "#fef08a");
-      sunGrad.addColorStop(0.7, "#facc15");
-      sunGrad.addColorStop(1, "rgba(250, 204, 21, 0)");
-      ctx.fillStyle = sunGrad;
-      ctx.beginPath();
-      ctx.arc(-48, -62, 34, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 뒤쪽 연한 산 실루엣
-      ctx.fillStyle = "rgba(224, 242, 254, 0.55)";
-      ctx.beginPath();
-      ctx.moveTo(-120, 74);
-      ctx.lineTo(-10, -28);
-      ctx.lineTo(65, 38);
-      ctx.lineTo(120, 74);
-      ctx.closePath();
-      ctx.fill();
-
-      // 앞쪽 선명한 화이트-스카이 산 실루엣
-      const mtnGrad = ctx.createLinearGradient(0, -15, 0, 74);
-      mtnGrad.addColorStop(0, "#ffffff");
-      mtnGrad.addColorStop(1, "#bae6fd");
-      ctx.fillStyle = mtnGrad;
-      ctx.beginPath();
-      ctx.moveTo(-115, 74);
-      ctx.lineTo(-42, 2);
-      ctx.lineTo(18, 52);
-      ctx.lineTo(62, -12);
-      ctx.lineTo(118, 74);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-
-      // 폴라로이드 하단 여백 미니 포인트 바
-      ctx.fillStyle = "#94a3b8";
-      ctx.beginPath();
-      ctx.roundRect(-64, 92, 86, 12, 6);
-      ctx.fill();
-
-      ctx.fillStyle = "#3b82f6";
-      ctx.beginPath();
-      ctx.roundRect(34, 92, 30, 12, 6);
-      ctx.fill();
-
-      ctx.restore();
-
-      // 4. 우측 하단 Google Drive 컬러 포인트 배지
-      ctx.save();
-      ctx.translate(378, 378);
-      ctx.shadowColor = "rgba(0, 0, 0, 0.38)";
-      ctx.shadowBlur = 18;
-      ctx.shadowOffsetY = 6;
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.arc(0, 0, 54, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.shadowColor = "transparent";
-      ctx.lineWidth = 13;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-
-      ctx.strokeStyle = "#22c55e";
-      ctx.beginPath();
-      ctx.moveTo(-2, -24);
-      ctx.lineTo(-24, 15);
-      ctx.stroke();
-
-      ctx.strokeStyle = "#eab308";
-      ctx.beginPath();
-      ctx.moveTo(2, -24);
-      ctx.lineTo(24, 15);
-      ctx.stroke();
-
-      ctx.strokeStyle = "#3b82f6";
-      ctx.beginPath();
-      ctx.moveTo(-20, 20);
-      ctx.lineTo(20, 20);
-      ctx.stroke();
-      ctx.restore();
-
-      const iconDataUrl = canvas.toDataURL("image/png");
-      document.getElementById("pwa-icon").href = iconDataUrl;
-      document.getElementById("apple-icon").href = iconDataUrl;
-
-      const baseUrl = window.location.origin + window.location.pathname;
-      const manifestObj = {
-        id: window.location.pathname,
-        name: "Work Album",
-        short_name: "Work Album",
-        description: "Google Drive 폴더 기반 업무용 사진 앨범 뷰어",
-        start_url: baseUrl,
-        scope: baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1),
-        display: "standalone",
-        background_color: "#0f172a",
-        theme_color: "#0f172a",
-        orientation: "any",
-        icons: [
-          {
-            src: iconDataUrl,
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any"
-          },
-          {
-            src: iconDataUrl,
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable"
-          }
-        ]
-      };
-
-      const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: "application/manifest+json" });
-      document.getElementById("pwa-manifest").href = URL.createObjectURL(manifestBlob);
-    })();
-  </script>
+  <!-- 정적 WebAPK 설치를 위한 실제 manifest.json 및 PNG 아이콘 연결 -->
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png" />
+  <link rel="apple-touch-icon" href="./icon-512.png" />
 
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1059,18 +864,16 @@
   <header>
     <div class="header-top">
       <div class="brand">
-        <img id="headerBrandIcon" class="brand-icon" alt="Work Album" />
+        <img src="./icon-192.png" class="brand-icon" alt="Work Album" />
         <span class="app-title">Work Album</span>
-        <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.5.0</span>
+        <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.5.1</span>
       </div>
       <div class="header-actions">
-        <!-- 폴더 변경 아이콘 버튼 -->
         <button id="btnChangeFolder" class="icon-btn hidden" title="폴더 변경" aria-label="폴더 변경">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
           </svg>
         </button>
-        <!-- 새로고침 아이콘 버튼 -->
         <button id="btnRefresh" class="icon-btn hidden" title="새로고침" aria-label="새로고침">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="23 4 23 10 17 10"></polyline>
@@ -1078,14 +881,12 @@
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
           </svg>
         </button>
-        <!-- API 설정 아이콘 버튼 -->
         <button id="btnClientSettings" class="icon-btn" title="API 설정" aria-label="API 설정">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
           </svg>
         </button>
-        <!-- 로그아웃 아이콘 버튼 -->
         <button id="btnLogout" class="icon-btn danger hidden" title="로그아웃" aria-label="로그아웃">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -1111,9 +912,9 @@
   <main id="mainContainer">
     <div id="loginView" class="login-wrapper">
       <div class="login-card">
-        <img id="loginAppIcon" class="login-app-icon" alt="Work Album" />
+        <img src="./icon-512.png" class="login-app-icon" alt="Work Album" />
         <h1>Work Album</h1>
-        <div class="login-version-tag">Version 1.5.0</div>
+        <div class="login-version-tag">Version 1.5.1</div>
         <p>구글 드라이브에 정리된 업무 사진 폴더를<br>월별 타임라인과 계층 구조 그대로 열람합니다.<br>한 번 로그인하면 브라우저를 닫아도 유지됩니다.</p>
         <button id="btnMainLogin" class="primary btn-google-login">Google 계정으로 로그인</button>
         <div class="login-sub-action">
@@ -1153,7 +954,7 @@
   </main>
 
   <footer>
-    Work Album · <span id="footerVersionLink">V1.5.0 업데이트 내역</span>
+    Work Album · <span id="footerVersionLink">V1.5.1 업데이트 내역</span>
   </footer>
 
   <!-- 폴더 선택 및 계층 탐색 모달 -->
@@ -1191,33 +992,25 @@
   <!-- 버전 정보 모달 -->
   <div id="versionModal" class="modal-backdrop">
     <div class="modal">
-      <h3>Work Album · V1.5.0</h3>
-      <p class="modal-desc">Google Drive 폴더 기반 업무용 사진 갤러리 PWA 웹 앱입니다.</p>
+      <h3>Work Album · V1.5.1</h3>
+      <p class="modal-desc">Google Drive 폴더 기반 업무용 사진 갤러리 WebAPK 앱입니다.</p>
       <div class="changelog-list">
         <div class="changelog-item">
-          <h4>V1.5.0 (현재 버전)</h4>
+          <h4>V1.5.1 (현재 버전)</h4>
           <ul>
-            <li>앱 공식 명칭을 <b>Work Album</b>으로 변경 (웹 타이틀, 헤더, 홈 화면 PWA 이름 일괄 적용)</li>
-            <li>상단 헤더의 폴더 변경, 새로고침, API 설정, 로그아웃 버튼을 깔끔한 아이콘 버튼으로 개편</li>
-            <li>현재 폴더 내 이름 검색창을 제거하여 모바일·PC 상단 툴바 UI 간소화</li>
+            <li>정적 <code>manifest.json</code>, 서비스 워커(<code>sw.js</code>), 실제 PNG 아이콘(192px/512px) 연결로 Android Chrome 정식 앱(WebAPK) 설치 지원</li>
           </ul>
         </div>
         <div class="changelog-item">
-          <h4>V1.4.1</h4>
+          <h4>V1.5.0</h4>
           <ul>
-            <li>입체 폴라로이드 사진 카드 & Google Drive 컬러 배지가 적용된 고해상도 스퀴클 앱 아이콘 적용</li>
+            <li>앱 공식 명칭을 <b>Work Album</b>으로 변경 및 상단 헤더 버튼 아이콘화</li>
           </ul>
         </div>
         <div class="changelog-item">
-          <h4>V1.4.0</h4>
+          <h4>V1.4.0 ~ V1.4.1</h4>
           <ul>
-            <li>사진 촬영일(EXIF) 및 생성일 기준 날짜순 자동 정렬 및 연·월별(YYYY년 MM월) 그룹 묶음 지원</li>
-          </ul>
-        </div>
-        <div class="changelog-item">
-          <h4>V1.3.0 ~ V1.0.0</h4>
-          <ul>
-            <li>다단계 하위 폴더 탐색, 로그인 상태 영구 유지, 읽기 전용 드라이브 뷰어 및 라이트박스 구현</li>
+            <li>입체 폴라로이드 아이콘 디자인, 사진 촬영일(EXIF) 기준 날짜순 정렬 및 월별 그룹 묶음 지원</li>
           </ul>
         </div>
       </div>
@@ -1265,15 +1058,14 @@
   </div>
 
   <script>
-    (function syncBrandIcons() {
-      const iconHref = document.getElementById("pwa-icon").href;
-      if (iconHref) {
-        document.getElementById("headerBrandIcon").src = iconHref;
-        document.getElementById("loginAppIcon").src = iconHref;
-      }
-    })();
+    // Service Worker 등록 (Chrome WebAPK 정식 앱 설치 필수 조건)
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
 
-    const APP_VERSION = "V1.5.0";
+    const APP_VERSION = "V1.5.1";
     const DEFAULT_CLIENT_ID = "126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com";
     const SCOPES = "https://www.googleapis.com/auth/drive.readonly";
 
@@ -1445,531 +1237,3 @@
     function handleLogout() {
       if (accessToken && window.google) {
         google.accounts.oauth2.revoke(accessToken, () => {});
-      }
-      accessToken = null;
-      tokenExpiry = 0;
-      wasLoggedIn = false;
-      hasLoadedInitialGallery = false;
-      localStorage.removeItem("gd_album_token");
-      localStorage.removeItem("gd_album_token_expiry");
-      localStorage.removeItem("gd_album_logged_in");
-
-      el.btnLogout.classList.add("hidden");
-      el.btnRefresh.classList.add("hidden");
-      el.btnChangeFolder.classList.add("hidden");
-      el.toolbar.classList.add("hidden");
-      el.galleryView.classList.add("hidden");
-      el.loadingView.classList.add("hidden");
-      el.folderSelectModal.classList.remove("open");
-      el.loginView.classList.remove("hidden");
-    }
-
-    function onLoginSuccess() {
-      el.loginView.classList.add("hidden");
-      el.loadingView.classList.add("hidden");
-      el.btnLogout.classList.remove("hidden");
-      el.btnChangeFolder.classList.remove("hidden");
-      openFolderSelectorModal(false);
-    }
-
-    function onAutoResumeLogin() {
-      el.loginView.classList.add("hidden");
-      el.loadingView.classList.add("hidden");
-      el.btnLogout.classList.remove("hidden");
-      el.btnChangeFolder.classList.remove("hidden");
-      if (savedRootFolderId) {
-        el.inputTargetFolder.value = savedRootFolderId === "root" ? "" : savedRootFolderId;
-        confirmAndLoadRoot();
-      } else {
-        openFolderSelectorModal(false);
-      }
-    }
-
-    function refreshAccessTokenSilently() {
-      return new Promise((resolve, reject) => {
-        if (!tokenClient) {
-          reject(new Error("Google 인증 클라이언트가 준비되지 않았습니다."));
-          return;
-        }
-        pendingSilentAction = () => resolve();
-        tokenClient.requestAccessToken({ prompt: "" });
-      });
-    }
-
-    async function fetchDriveApi(url, retry = true) {
-      if (!isTokenValid() && wasLoggedIn && retry) {
-        await refreshAccessTokenSilently();
-      }
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-      if (res.status === 401) {
-        if (retry && wasLoggedIn) {
-          await refreshAccessTokenSilently();
-          return fetchDriveApi(url, false);
-        }
-        handleLogout();
-        throw new Error("인증 세션이 만료되었습니다. 다시 로그인해 주세요.");
-      }
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error?.message || `API 오류 (${res.status})`);
-      }
-      return res.json();
-    }
-
-    async function openFolderSelectorModal(allowCancel) {
-      el.inputTargetFolder.value = savedRootFolderId === "root" ? "" : savedRootFolderId;
-      if (allowCancel && hasLoadedInitialGallery) {
-        el.btnCancelFolderSelect.classList.remove("hidden");
-      } else {
-        el.btnCancelFolderSelect.classList.add("hidden");
-      }
-
-      modalBrowseStack = [{ id: "root", name: "내 드라이브" }];
-      el.folderSelectModal.classList.add("open");
-      await loadModalFolderList("root");
-    }
-
-    function renderModalBreadcrumbs() {
-      el.modalCrumbs.innerHTML = "";
-      modalBrowseStack.forEach((item, idx) => {
-        const span = document.createElement("span");
-        span.className = "modal-crumb" + (idx === modalBrowseStack.length - 1 ? " active" : "");
-        span.textContent = item.name;
-        if (idx < modalBrowseStack.length - 1) {
-          span.onclick = () => {
-            modalBrowseStack = modalBrowseStack.slice(0, idx + 1);
-            loadModalFolderList(item.id);
-          };
-        }
-        el.modalCrumbs.appendChild(span);
-
-        if (idx < modalBrowseStack.length - 1) {
-          const sep = document.createElement("span");
-          sep.style.color = "var(--text-secondary)";
-          sep.textContent = "/";
-          el.modalCrumbs.appendChild(sep);
-        }
-      });
-    }
-
-    async function loadModalFolderList(parentId) {
-      renderModalBreadcrumbs();
-      el.quickFolderList.innerHTML = `<div style="padding:14px; text-align:center; color:var(--text-secondary); font-size:0.85rem;">하위 폴더 목록을 불러오는 중...</div>`;
-
-      try {
-        const q = `'${parentId}' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'`;
-        const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&orderBy=name&pageSize=100`;
-        const data = await fetchDriveApi(url);
-        const folders = data.files || [];
-
-        renderQuickFolderList(folders, parentId);
-      } catch (err) {
-        el.quickFolderList.innerHTML = `<div style="padding:12px; text-align:center; color:#fca5a5; font-size:0.83rem;">목록을 불러오지 못했습니다. 아래에 폴더 ID나 링크를 직접 입력해 주세요.</div>`;
-      }
-    }
-
-    function renderQuickFolderList(folders, parentId) {
-      el.quickFolderList.innerHTML = "";
-      const currentTarget = extractFolderId(el.inputTargetFolder.value);
-
-      const currentDirObj = modalBrowseStack[modalBrowseStack.length - 1];
-      const selfItem = document.createElement("div");
-      selfItem.className = "quick-folder-item" + (currentTarget === currentDirObj.id ? " selected" : "");
-      selfItem.innerHTML = `
-        <div class="quick-folder-left">
-          <span>${parentId === "root" ? "🏠 내 드라이브 전체 (최상위)" : "📂 [현재 폴더] " + currentDirObj.name}</span>
-        </div>
-      `;
-      selfItem.onclick = () => {
-        el.inputTargetFolder.value = parentId === "root" ? "" : parentId;
-        highlightSelectedQuickItem(selfItem);
-      };
-      el.quickFolderList.appendChild(selfItem);
-
-      if (folders.length === 0) {
-        const emptyNotice = document.createElement("div");
-        emptyNotice.style.cssText = "padding:12px; text-align:center; color:var(--text-secondary); font-size:0.82rem;";
-        emptyNotice.textContent = "이 폴더 안에 더 이상 하위 폴더가 없습니다.";
-        el.quickFolderList.appendChild(emptyNotice);
-        return;
-      }
-
-      folders.forEach(f => {
-        const item = document.createElement("div");
-        item.className = "quick-folder-item" + (currentTarget === f.id ? " selected" : "");
-
-        const leftDiv = document.createElement("div");
-        leftDiv.className = "quick-folder-left";
-        leftDiv.innerHTML = `<span>📁 ${f.name}</span>`;
-
-        const enterBtn = document.createElement("button");
-        enterBtn.type = "button";
-        enterBtn.className = "btn-enter-subfolder";
-        enterBtn.textContent = "하위 열기 ❯";
-        enterBtn.onclick = (e) => {
-          e.stopPropagation();
-          el.inputTargetFolder.value = f.id;
-          modalBrowseStack.push({ id: f.id, name: f.name });
-          loadModalFolderList(f.id);
-        };
-
-        item.onclick = () => {
-          el.inputTargetFolder.value = f.id;
-          highlightSelectedQuickItem(item);
-        };
-
-        item.ondblclick = () => {
-          el.inputTargetFolder.value = f.id;
-          modalBrowseStack.push({ id: f.id, name: f.name });
-          loadModalFolderList(f.id);
-        };
-
-        item.appendChild(leftDiv);
-        item.appendChild(enterBtn);
-        el.quickFolderList.appendChild(item);
-      });
-    }
-
-    function highlightSelectedQuickItem(selectedEl) {
-      document.querySelectorAll(".quick-folder-item").forEach(node => node.classList.remove("selected"));
-      selectedEl.classList.add("selected");
-    }
-
-    async function confirmAndLoadRoot() {
-      const targetId = extractFolderId(el.inputTargetFolder.value);
-      savedRootFolderId = targetId;
-      localStorage.setItem("gd_album_root_id", savedRootFolderId);
-
-      el.folderSelectModal.classList.remove("open");
-      el.toolbar.classList.remove("hidden");
-      el.btnRefresh.classList.remove("hidden");
-
-      let rootName = "내 드라이브";
-      if (targetId !== "root") {
-        try {
-          const meta = await fetchDriveApi(`https://www.googleapis.com/drive/v3/files/${targetId}?fields=id,name`);
-          if (meta && meta.name) rootName = meta.name;
-        } catch (e) {
-          rootName = "선택된 폴더";
-        }
-      }
-
-      hasLoadedInitialGallery = true;
-      folderStack = [{ id: targetId, name: rootName }];
-      loadFolder(targetId);
-    }
-
-    async function loadFolder(folderId) {
-      el.galleryView.classList.add("hidden");
-      el.loadingView.classList.remove("hidden");
-      el.loadingText.textContent = "구글 드라이브 폴더와 사진 날짜 정보를 불러오는 중...";
-      renderBreadcrumb();
-
-      try {
-        let allItems = [];
-        let pageToken = "";
-        const q = `'${folderId}' in parents and trashed = false and (mimeType = 'application/vnd.google-apps.folder' or mimeType contains 'image/')`;
-        const fields = "nextPageToken, files(id, name, mimeType, thumbnailLink, webViewLink, createdTime, modifiedTime, imageMediaMetadata(time))";
-
-        do {
-          const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=${encodeURIComponent(fields)}&orderBy=folder,name&pageSize=200${pageToken ? `&pageToken=${pageToken}` : ""}`;
-          const data = await fetchDriveApi(url);
-          allItems = allItems.concat(data.files || []);
-          pageToken = data.nextPageToken || "";
-        } while (pageToken);
-
-        currentFolders = allItems.filter(f => f.mimeType === "application/vnd.google-apps.folder");
-        currentPhotos = allItems
-          .filter(f => f.mimeType !== "application/vnd.google-apps.folder")
-          .map(p => {
-            const parsedDate = parsePhotoDate(p);
-            const monthInfo = getMonthKeyAndLabel(parsedDate);
-            return {
-              ...p,
-              _parsedDate: parsedDate,
-              _timestamp: parsedDate.getTime(),
-              _dateStr: formatDateYMD(parsedDate),
-              _monthKey: monthInfo.key,
-              _monthLabel: monthInfo.label
-            };
-          });
-
-        renderItems();
-      } catch (err) {
-        alert(err.message);
-      } finally {
-        el.loadingView.classList.add("hidden");
-        el.galleryView.classList.remove("hidden");
-      }
-    }
-
-    function renderBreadcrumb() {
-      el.breadcrumb.innerHTML = "";
-      folderStack.forEach((item, idx) => {
-        const span = document.createElement("span");
-        span.className = "crumb-item" + (idx === folderStack.length - 1 ? " active" : "");
-        span.textContent = item.name;
-        if (idx < folderStack.length - 1) {
-          span.onclick = () => {
-            folderStack = folderStack.slice(0, idx + 1);
-            loadFolder(item.id);
-          };
-        }
-        el.breadcrumb.appendChild(span);
-
-        if (idx < folderStack.length - 1) {
-          const sep = document.createElement("span");
-          sep.className = "crumb-sep";
-          sep.textContent = "/";
-          el.breadcrumb.appendChild(sep);
-        }
-      });
-    }
-
-    function getHighResThumbnail(thumbnailLink, size = 600) {
-      if (!thumbnailLink) return "";
-      return thumbnailLink.replace(/=s\d+$/, `=s${size}`);
-    }
-
-    function createPhotoCardElement(photo, globalIdx) {
-      const card = document.createElement("div");
-      card.className = "photo-card";
-      const thumbUrl = getHighResThumbnail(photo.thumbnailLink, 500);
-      card.innerHTML = `
-        <img src="${thumbUrl}" alt="${photo.name}" loading="lazy" />
-        <div class="photo-overlay">
-          <div class="photo-title">${photo.name}</div>
-          <div class="photo-date">${photo._dateStr}</div>
-        </div>
-      `;
-      card.onclick = () => openLightbox(globalIdx);
-      return card;
-    }
-
-    function renderItems() {
-      const visFolders = currentFolders;
-      let photos = [...currentPhotos];
-
-      if (sortOrder === "date-desc") {
-        photos.sort((a, b) => b._timestamp - a._timestamp || a.name.localeCompare(b.name));
-      } else if (sortOrder === "date-asc") {
-        photos.sort((a, b) => a._timestamp - b._timestamp || a.name.localeCompare(b.name));
-      } else {
-        photos.sort((a, b) => a.name.localeCompare(b.name));
-      }
-
-      filteredPhotos = photos;
-
-      el.folderGrid.innerHTML = "";
-      if (visFolders.length > 0) {
-        el.folderSection.classList.remove("hidden");
-        el.folderCount.textContent = `${visFolders.length}개`;
-        visFolders.forEach(folder => {
-          const card = document.createElement("div");
-          card.className = "folder-card";
-          const dateStr = folder.modifiedTime ? folder.modifiedTime.slice(0, 10) : "";
-          card.innerHTML = `
-            <svg class="folder-icon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
-            </svg>
-            <div class="folder-info">
-              <div class="folder-name" title="${folder.name}">${folder.name}</div>
-              <div class="folder-meta">${dateStr}</div>
-            </div>
-          `;
-          card.onclick = () => {
-            folderStack.push({ id: folder.id, name: folder.name });
-            loadFolder(folder.id);
-          };
-          el.folderGrid.appendChild(card);
-        });
-      } else {
-        el.folderSection.classList.add("hidden");
-      }
-
-      el.photoContainer.innerHTML = "";
-      el.monthJumpBar.innerHTML = "";
-
-      if (filteredPhotos.length > 0) {
-        el.photoSection.classList.remove("hidden");
-        el.photoCount.textContent = `${filteredPhotos.length}장`;
-
-        if (sortOrder === "name-asc") {
-          el.monthJumpBar.classList.add("hidden");
-          const grid = document.createElement("div");
-          grid.className = "photo-grid";
-          filteredPhotos.forEach((photo, idx) => {
-            grid.appendChild(createPhotoCardElement(photo, idx));
-          });
-          el.photoContainer.appendChild(grid);
-        } else {
-          const groups = [];
-          const groupMap = new Map();
-
-          filteredPhotos.forEach((photo, idx) => {
-            if (!groupMap.has(photo._monthKey)) {
-              const g = { key: photo._monthKey, label: photo._monthLabel, items: [] };
-              groupMap.set(photo._monthKey, g);
-              groups.push(g);
-            }
-            groupMap.get(photo._monthKey).items.push({ photo, globalIdx: idx });
-          });
-
-          if (groups.length > 1) {
-            el.monthJumpBar.classList.remove("hidden");
-            groups.forEach(g => {
-              const chip = document.createElement("button");
-              chip.type = "button";
-              chip.className = "month-chip";
-              chip.textContent = `${g.label} (${g.items.length})`;
-              chip.onclick = () => {
-                const targetEl = document.getElementById(`month-sec-${g.key}`);
-                if (targetEl) {
-                  targetEl.classList.remove("collapsed");
-                  targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
-              };
-              el.monthJumpBar.appendChild(chip);
-            });
-          } else {
-            el.monthJumpBar.classList.add("hidden");
-          }
-
-          groups.forEach(g => {
-            const section = document.createElement("section");
-            section.className = "month-group";
-            section.id = `month-sec-${g.key}`;
-
-            const header = document.createElement("div");
-            header.className = "month-header";
-            header.title = "클릭하여 접기/펼치기";
-            header.innerHTML = `
-              <div class="month-header-left">
-                <span class="month-toggle-icon">▼</span>
-                <span>${g.label}</span>
-              </div>
-              <span class="month-count-badge">${g.items.length}장</span>
-            `;
-            header.onclick = () => section.classList.toggle("collapsed");
-
-            const grid = document.createElement("div");
-            grid.className = "photo-grid";
-            g.items.forEach(({ photo, globalIdx }) => {
-              grid.appendChild(createPhotoCardElement(photo, globalIdx));
-            });
-
-            section.appendChild(header);
-            section.appendChild(grid);
-            el.photoContainer.appendChild(section);
-          });
-        }
-      } else {
-        el.photoSection.classList.add("hidden");
-        el.monthJumpBar.classList.add("hidden");
-      }
-
-      if (visFolders.length === 0 && filteredPhotos.length === 0) {
-        el.emptyFolderMsg.classList.remove("hidden");
-      } else {
-        el.emptyFolderMsg.classList.add("hidden");
-      }
-    }
-
-    function openLightbox(index) {
-      currentPhotoIndex = index;
-      updateLightbox();
-      el.lightbox.classList.add("open");
-    }
-
-    function closeLightbox() {
-      el.lightbox.classList.remove("open");
-      el.lbImage.src = "";
-    }
-
-    function updateLightbox() {
-      const photo = filteredPhotos[currentPhotoIndex];
-      if (!photo) return;
-      el.lbTitle.textContent = photo.name;
-      el.lbCounter.textContent = `${currentPhotoIndex + 1} / ${filteredPhotos.length}  ·  ${photo._dateStr}`;
-      el.lbDriveLink.href = photo.webViewLink || `https://drive.google.com/file/d/${photo.id}/view`;
-      el.lbImage.src = getHighResThumbnail(photo.thumbnailLink, 2048);
-    }
-
-    function prevPhoto() {
-      if (filteredPhotos.length === 0) return;
-      currentPhotoIndex = (currentPhotoIndex - 1 + filteredPhotos.length) % filteredPhotos.length;
-      updateLightbox();
-    }
-
-    function nextPhoto() {
-      if (filteredPhotos.length === 0) return;
-      currentPhotoIndex = (currentPhotoIndex + 1) % filteredPhotos.length;
-      updateLightbox();
-    }
-
-    el.btnMainLogin.onclick = handleLogin;
-    el.btnLogout.onclick = handleLogout;
-    el.btnRefresh.onclick = () => {
-      const current = folderStack[folderStack.length - 1];
-      if (current) loadFolder(current.id);
-    };
-    el.btnChangeFolder.onclick = () => openFolderSelectorModal(true);
-    el.btnSelectCurrentModalDir.onclick = () => {
-      const currentDirObj = modalBrowseStack[modalBrowseStack.length - 1];
-      el.inputTargetFolder.value = currentDirObj.id === "root" ? "" : currentDirObj.id;
-      loadModalFolderList(currentDirObj.id);
-    };
-    el.btnConfirmFolderSelect.onclick = confirmAndLoadRoot;
-    el.btnCancelFolderSelect.onclick = () => el.folderSelectModal.classList.remove("open");
-    el.sortSelect.onchange = () => {
-      sortOrder = el.sortSelect.value;
-      localStorage.setItem("gd_album_sort_order", sortOrder);
-      renderItems();
-    };
-
-    el.versionBadge.onclick = () => el.versionModal.classList.add("open");
-    el.footerVersionLink.onclick = () => el.versionModal.classList.add("open");
-    el.btnCloseVersionModal.onclick = () => el.versionModal.classList.remove("open");
-
-    el.btnClientSettings.onclick = () => {
-      el.inputClientId.value = clientId;
-      el.clientModal.classList.add("open");
-    };
-    el.btnCloseClientModal.onclick = () => el.clientModal.classList.remove("open");
-    el.btnSaveClientModal.onclick = () => {
-      clientId = el.inputClientId.value.trim() || DEFAULT_CLIENT_ID;
-      localStorage.setItem("gd_album_client_id", clientId);
-      el.clientModal.classList.remove("open");
-      initGis();
-    };
-
-    el.lbClose.onclick = closeLightbox;
-    el.lbPrev.onclick = prevPhoto;
-    el.lbNext.onclick = nextPhoto;
-
-    document.addEventListener("keydown", (e) => {
-      if (!el.lightbox.classList.contains("open")) return;
-      if (e.key === "Escape") closeLightbox();
-      if (e.key === "ArrowLeft") prevPhoto();
-      if (e.key === "ArrowRight") nextPhoto();
-    });
-
-    let touchStartX = 0;
-    el.lbBody.addEventListener("touchstart", (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-
-    el.lbBody.addEventListener("touchend", (e) => {
-      const diff = e.changedTouches[0].screenX - touchStartX;
-      if (Math.abs(diff) > 50) {
-        if (diff > 0) prevPhoto();
-        else nextPhoto();
-      }
-    }, { passive: true });
-
-    window.onload = initGis;
-  </script>
-</body>
-</html>
