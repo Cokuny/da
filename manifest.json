@@ -1,8 +1,8 @@
 {
   "id": "/album/",
-  "name": "Work Album",
-  "short_name": "Work Album",
-  "description": "Google Drive 폴더 기반 업무용 사진 앨범 뷰어",
+  "name": "Drive Album",
+  "short_name": "Drive Album",
+  "description": "Google Drive 폴더 기반 사진·동영상 앨범 뷰어",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
