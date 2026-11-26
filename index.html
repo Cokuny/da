@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Drive Album" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Drive Album (V1.6.2)</title>
+  <title>Drive Album (V1.7.0)</title>
 
   <!-- 정적 WebAPK 설치를 위한 실제 manifest.json 및 PNG 아이콘 연결 -->
   <link rel="manifest" href="./manifest.json" />
@@ -219,7 +219,6 @@
       user-select: none;
     }
 
-    /* 정렬 아이콘 & 드롭다운 메뉴 */
     .sort-dropdown-wrap {
       position: relative;
       flex-shrink: 0;
@@ -585,6 +584,65 @@
       transform: scale(1.05);
     }
 
+    /* 동영상 썸네일 배지 & 재생 아이콘 */
+    .video-badge-top {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(4px);
+      color: #f8fafc;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 7px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .video-play-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.72);
+      border: 2px solid rgba(255, 255, 255, 0.88);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+      pointer-events: none;
+      transition: transform 0.2s ease, background 0.2s ease;
+      z-index: 2;
+    }
+
+    .photo-card:hover .video-play-center {
+      transform: translate(-50%, -50%) scale(1.08);
+      background: rgba(59, 130, 246, 0.88);
+    }
+
+    .video-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      padding: 12px;
+      text-align: center;
+    }
+
     .photo-overlay {
       position: absolute;
       inset: 0;
@@ -595,6 +653,7 @@
       flex-direction: column;
       justify-content: flex-end;
       padding: 10px;
+      z-index: 3;
     }
 
     .photo-card:hover .photo-overlay {
@@ -838,6 +897,7 @@
       text-decoration: underline;
     }
 
+    /* Lightbox Viewer (이미지 & 동영상 겸용) */
     .lightbox {
       position: fixed;
       inset: 0;
@@ -857,13 +917,14 @@
       justify-content: space-between;
       align-items: center;
       padding: 12px 16px;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+      background: linear-gradient(to bottom, rgba(0,0,0,0.75), transparent);
       z-index: 102;
+      gap: 10px;
     }
 
     .lb-info {
       overflow: hidden;
-      padding-right: 12px;
+      padding-right: 8px;
     }
 
     .lb-title {
@@ -897,12 +958,49 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
+    .lb-video-wrap {
+      width: 100%;
+      height: 100%;
+      max-width: 1120px;
+      max-height: 82vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .lb-video-wrap video {
+      width: 100%;
+      height: 100%;
+      max-height: 78vh;
+      background-color: #000;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      outline: none;
+    }
+
+    .lb-video-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.75);
+      border-radius: 8px;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: var(--text-primary);
+      z-index: 5;
+    }
+
     .lb-nav {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(30, 41, 59, 0.7);
-      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(30, 41, 59, 0.75);
+      border: 1px solid rgba(255,255,255,0.18);
       color: #fff;
       width: 44px;
       height: 44px;
@@ -911,7 +1009,7 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      z-index: 102;
+      z-index: 103;
     }
 
     .lb-nav:hover {
@@ -932,7 +1030,7 @@
         <img src="./icon-192.png" class="brand-icon" alt="Drive Album" />
         <div class="brand-text-wrap">
           <span class="app-title">Drive Album</span>
-          <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.6.2</span>
+          <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.7.0</span>
         </div>
       </div>
       <div class="header-actions">
@@ -976,7 +1074,7 @@
         </svg>
       </button>
       <div id="sortMenu" class="sort-menu" role="menu">
-        <div class="sort-menu-header">사진 정렬 기준</div>
+        <div class="sort-menu-header">미디어 정렬 기준</div>
         <button type="button" class="sort-option-item" data-sort="date-desc" role="menuitem">
           <span>📅 최신 촬영순 (월별)</span>
           <span class="sort-check">✓</span>
@@ -998,8 +1096,8 @@
       <div class="login-card">
         <img src="./icon-512.png" class="login-app-icon" alt="Drive Album" />
         <h1>Drive Album</h1>
-        <div class="login-version-tag">Version 1.6.2</div>
-        <p>구글 드라이브에 정리된 사진 폴더를<br>촬영 날짜 기준 월별 타임라인으로 열람합니다.<br>아래 버튼을 누르면 Google 로그인 창이 열립니다.</p>
+        <div class="login-version-tag">Version 1.7.0</div>
+        <p>구글 드라이브에 정리된 사진과 동영상을<br>촬영 날짜 기준 월별 타임라인으로 열람합니다.<br>아래 버튼을 누르면 Google 로그인 창이 열립니다.</p>
         <button id="btnMainLogin" class="primary btn-google-login">Google 계정으로 로그인</button>
         <div class="login-sub-action">
           읽기 전용 권한(drive.readonly)만 사용하므로 원본 파일은 수정되지 않습니다.
@@ -1023,8 +1121,8 @@
 
       <div id="photoSection">
         <div class="section-title">
-          <span>사진</span>
-          <span id="photoCount">0장</span>
+          <span>사진 · 동영상</span>
+          <span id="photoCount">0개</span>
         </div>
         <div id="monthJumpBar" class="month-jump-bar hidden"></div>
         <div id="photoContainer"></div>
@@ -1032,19 +1130,19 @@
 
       <div id="emptyFolderMsg" class="center-box hidden">
         <h2>표시할 항목이 없습니다</h2>
-        <p>이 폴더에 하위 폴더나 이미지 파일이 없습니다.</p>
+        <p>이 폴더에 하위 폴더나 사진·동영상 파일이 없습니다.</p>
       </div>
     </div>
   </main>
 
   <footer>
-    Drive Album · <span id="footerVersionLink">V1.6.2 업데이트 내역</span>
+    Drive Album · <span id="footerVersionLink">V1.7.0 업데이트 내역</span>
   </footer>
 
   <!-- 폴더 선택 및 계층 탐색 모달 -->
   <div id="folderSelectModal" class="modal-backdrop">
     <div class="modal">
-      <h3>어느 폴더에서 사진을 불러올까요?</h3>
+      <h3>어느 폴더에서 미디어을 불러올까요?</h3>
       <p class="modal-desc">폴더를 클릭해 선택하거나, 우측 <b>하위 열기 ❯</b> 버튼으로 하위 폴더까지 들어가서 지정할 수 있습니다.</p>
 
       <div class="form-group" style="margin-bottom: 12px;">
@@ -1076,26 +1174,27 @@
   <!-- 버전 정보 모달 -->
   <div id="versionModal" class="modal-backdrop">
     <div class="modal">
-      <h3>Drive Album · V1.6.2</h3>
-      <p class="modal-desc">Google Drive 폴더 기반 사진 갤러리 WebAPK 앱입니다.</p>
+      <h3>Drive Album · V1.7.0</h3>
+      <p class="modal-desc">Google Drive 폴더 기반 사진·동영상 갤러리 WebAPK 앱입니다.</p>
       <div class="changelog-list">
         <div class="changelog-item">
-          <h4>V1.6.2 (현재 버전)</h4>
+          <h4>V1.7.0 (현재 버전)</h4>
           <ul>
-            <li>정렬 선택 드롭다운을 깔끔한 아이콘 버튼으로 변경하고, 클릭 시 정렬 기준 팝업 메뉴에서 선택하도록 개선</li>
+            <li><b>동영상 조회 및 앱 내 스트리밍 재생 지원:</b> 폴더 내 MP4·MOV 등 동영상 파일을 함께 불러오며, 썸네일에 재생 아이콘 및 재생 시간 배지 표시</li>
+            <li>라이트박스 뷰어에서 인증된 스트리밍으로 동영상을 즉시 재생하고 좌우 화살표로 사진·동영상 연속 탐색 가능</li>
           </ul>
         </div>
         <div class="changelog-item">
-          <h4>V1.6.1</h4>
+          <h4>V1.6.2</h4>
           <ul>
-            <li>사이트 접속 시 자동으로 로그인 팝업이 열리지 않고, <b>Google 계정으로 로그인</b> 버튼 클릭 시에만 로그인 창이 뜨도록 수정</li>
+            <li>정렬 선택 드롭다운을 아이콘 버튼으로 변경하고 정렬 기준 팝업 메뉴에서 선택하도록 개선</li>
           </ul>
         </div>
         <div class="changelog-item">
-          <h4>V1.6.0</h4>
+          <h4>V1.6.0 ~ V1.6.1</h4>
           <ul>
-            <li>사진 열람 및 그룹 분류 기준을 실제 촬영 시점(EXIF 원본 촬영일 → 파일명 내 촬영일시 패턴) 우선으로 강화</li>
-            <li>앱 이름을 <b>Drive Album</b>으로 변경하고 상단 타이틀 바로 아래에 버전 배지 배치</li>
+            <li>실제 촬영 시점(EXIF 원본 촬영일 → 파일명 내 촬영일시 패턴) 우선 정렬 및 월별 그룹 묶음 지원</li>
+            <li>버튼 클릭 시 로그인 팝업 실행 및 <b>Drive Album</b> 타이틀 하단 버전 배지 배치</li>
           </ul>
         </div>
         <div class="changelog-item">
@@ -1127,16 +1226,16 @@
     </div>
   </div>
 
-  <!-- Lightbox Modal -->
+  <!-- Lightbox Modal (사진 & 동영상 겸용) -->
   <div id="lightbox" class="lightbox">
     <div class="lb-header">
       <div class="lb-info">
         <div id="lbTitle" class="lb-title">파일명.jpg</div>
         <div id="lbCounter" class="lb-counter">1 / 10</div>
       </div>
-      <div style="display:flex; gap:8px;">
+      <div style="display:flex; gap:8px; flex-shrink:0;">
         <a id="lbDriveLink" href="#" target="_blank" rel="noopener" style="text-decoration:none;">
-          <button type="button">원본 열기 ↗</button>
+          <button type="button">Drive에서 열기 ↗</button>
         </a>
         <button id="lbClose" class="danger">✕ 닫기</button>
       </div>
@@ -1144,6 +1243,13 @@
     <div class="lb-body" id="lbBody">
       <button class="lb-nav lb-prev" id="lbPrev" title="이전 (←)">❮</button>
       <img id="lbImage" src="" alt="" />
+      <div id="lbVideoWrap" class="lb-video-wrap hidden">
+        <div id="lbVideoLoading" class="lb-video-loading hidden">
+          <div class="spinner" style="margin:0;"></div>
+          <span>동영상 스트림을 불러오는 중...</span>
+        </div>
+        <video id="lbVideo" controls playsinline preload="metadata"></video>
+      </div>
       <button class="lb-nav lb-next" id="lbNext" title="다음 (→)">❯</button>
     </div>
   </div>
@@ -1155,7 +1261,7 @@
       });
     }
 
-    const APP_VERSION = "V1.6.2";
+    const APP_VERSION = "V1.7.0";
     const DEFAULT_CLIENT_ID = "126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com";
     const SCOPES = "https://www.googleapis.com/auth/drive.readonly";
 
@@ -1170,9 +1276,11 @@
     let folderStack = [];
     let modalBrowseStack = [{ id: "root", name: "내 드라이브" }];
     let currentFolders = [];
-    let currentPhotos = [];
-    let filteredPhotos = [];
-    let currentPhotoIndex = 0;
+    let currentMedia = [];
+    let filteredMedia = [];
+    let currentMediaIndex = 0;
+    let activeVideoObjectUrl = null;
+    let videoLoadRequestId = 0;
     let hasLoadedInitialGallery = false;
     let pendingSilentAction = null;
 
@@ -1218,6 +1326,9 @@
       lightbox: document.getElementById("lightbox"),
       lbBody: document.getElementById("lbBody"),
       lbImage: document.getElementById("lbImage"),
+      lbVideoWrap: document.getElementById("lbVideoWrap"),
+      lbVideoLoading: document.getElementById("lbVideoLoading"),
+      lbVideo: document.getElementById("lbVideo"),
       lbTitle: document.getElementById("lbTitle"),
       lbCounter: document.getElementById("lbCounter"),
       lbDriveLink: document.getElementById("lbDriveLink"),
@@ -1247,6 +1358,18 @@
       return match ? match[1] : val;
     }
 
+    function formatDuration(durationMillis) {
+      if (!durationMillis) return "";
+      const totalSec = Math.max(1, Math.round(Number(durationMillis) / 1000));
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      if (h > 0) {
+        return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+      }
+      return `${m}:${String(s).padStart(2, "0")}`;
+    }
+
     function extractDateFromFilename(filename) {
       if (!filename) return null;
       const fullMatch = filename.match(/(?:^|[^0-9])(20\d{2}|19\d{2})[-_.]?(0[1-9]|1[0-2])[-_.]?(0[1-9]|[12]\d|3[01])[-_ T.]?([01]\d|2[0-3])[-_.]?([0-5]\d)[-_.]?([0-5]\d)(?:[^0-9]|$)/);
@@ -1264,8 +1387,8 @@
       return null;
     }
 
-    function parsePhotoCaptureInfo(photo) {
-      const exifTime = photo.imageMediaMetadata && photo.imageMediaMetadata.time;
+    function parseMediaCaptureInfo(item) {
+      const exifTime = item.imageMediaMetadata && item.imageMediaMetadata.time;
       if (exifTime) {
         const m = exifTime.match(/^(\d{4}):(\d{2}):(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
         if (m) {
@@ -1281,12 +1404,12 @@
         }
       }
 
-      const fromName = extractDateFromFilename(photo.name);
+      const fromName = extractDateFromFilename(item.name);
       if (fromName) {
         return { date: fromName.date, source: "촬영일", hasTime: fromName.hasTime };
       }
 
-      const fallback = photo.createdTime || photo.modifiedTime;
+      const fallback = item.createdTime || item.modifiedTime;
       if (fallback) {
         const d = new Date(fallback);
         if (!isNaN(d.getTime())) {
@@ -1598,14 +1721,14 @@
     async function loadFolder(folderId) {
       el.galleryView.classList.add("hidden");
       el.loadingView.classList.remove("hidden");
-      el.loadingText.textContent = "구글 드라이브 폴더와 사진 촬영 날짜를 불러오는 중...";
+      el.loadingText.textContent = "구글 드라이브 폴더와 사진·동영상을 불러오는 중...";
       renderBreadcrumb();
 
       try {
         let allItems = [];
         let pageToken = "";
-        const q = `'${folderId}' in parents and trashed = false and (mimeType = 'application/vnd.google-apps.folder' or mimeType contains 'image/')`;
-        const fields = "nextPageToken, files(id, name, mimeType, thumbnailLink, webViewLink, createdTime, modifiedTime, imageMediaMetadata(time))";
+        const q = `'${folderId}' in parents and trashed = false and (mimeType = 'application/vnd.google-apps.folder' or mimeType contains 'image/' or mimeType contains 'video/')`;
+        const fields = "nextPageToken, files(id, name, mimeType, thumbnailLink, webViewLink, createdTime, modifiedTime, imageMediaMetadata(time), videoMediaMetadata(durationMillis))";
 
         do {
           const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=${encodeURIComponent(fields)}&orderBy=folder,name&pageSize=200${pageToken ? `&pageToken=${pageToken}` : ""}`;
@@ -1615,14 +1738,20 @@
         } while (pageToken);
 
         currentFolders = allItems.filter(f => f.mimeType === "application/vnd.google-apps.folder");
-        currentPhotos = allItems
+        currentMedia = allItems
           .filter(f => f.mimeType !== "application/vnd.google-apps.folder")
-          .map(p => {
-            const captureInfo = parsePhotoCaptureInfo(p);
+          .map(item => {
+            const isVideo = item.mimeType && item.mimeType.startsWith("video/");
+            const captureInfo = parseMediaCaptureInfo(item);
             const monthInfo = getMonthKeyAndLabel(captureInfo.date);
             const dateTimeText = formatCaptureDateTime(captureInfo.date, captureInfo.hasTime);
+            const durationText = isVideo && item.videoMediaMetadata
+              ? formatDuration(item.videoMediaMetadata.durationMillis)
+              : "";
             return {
-              ...p,
+              ...item,
+              _isVideo: isVideo,
+              _durationText: durationText,
               _parsedDate: captureInfo.date,
               _timestamp: captureInfo.date.getTime(),
               _dateSource: captureInfo.source,
@@ -1669,35 +1798,63 @@
       return thumbnailLink.replace(/=s\d+$/, `=s${size}`);
     }
 
-    function createPhotoCardElement(photo, globalIdx) {
+    function createMediaCardElement(item, globalIdx) {
       const card = document.createElement("div");
       card.className = "photo-card";
-      const thumbUrl = getHighResThumbnail(photo.thumbnailLink, 500);
-      const labelPrefix = photo._dateSource ? `${photo._dateSource}: ` : "";
-      card.innerHTML = `
-        <img src="${thumbUrl}" alt="${photo.name}" loading="lazy" />
-        <div class="photo-overlay">
-          <div class="photo-title">${photo.name}</div>
-          <div class="photo-date">${labelPrefix}${photo._dateStr}</div>
-        </div>
-      `;
+      const thumbUrl = getHighResThumbnail(item.thumbnailLink, 500);
+      const labelPrefix = item._dateSource ? `${item._dateSource}: ` : "";
+
+      if (item._isVideo) {
+        const badgeLabel = item._durationText ? `▶ ${item._durationText}` : "▶ 동영상";
+        const thumbHtml = thumbUrl
+          ? `<img src="${thumbUrl}" alt="${item.name}" loading="lazy" />`
+          : `<div class="video-placeholder">
+               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
+               </svg>
+               <span style="font-size:0.75rem; word-break:break-all;">${item.name}</span>
+             </div>`;
+
+        card.innerHTML = `
+          ${thumbHtml}
+          <span class="video-badge-top">${badgeLabel}</span>
+          <div class="video-play-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-left:2px;">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </div>
+          <div class="photo-overlay">
+            <div class="photo-title">${item.name}</div>
+            <div class="photo-date">${labelPrefix}${item._dateStr}</div>
+          </div>
+        `;
+      } else {
+        card.innerHTML = `
+          <img src="${thumbUrl}" alt="${item.name}" loading="lazy" />
+          <div class="photo-overlay">
+            <div class="photo-title">${item.name}</div>
+            <div class="photo-date">${labelPrefix}${item._dateStr}</div>
+          </div>
+        `;
+      }
+
       card.onclick = () => openLightbox(globalIdx);
       return card;
     }
 
     function renderItems() {
       const visFolders = currentFolders;
-      let photos = [...currentPhotos];
+      let items = [...currentMedia];
 
       if (sortOrder === "date-desc") {
-        photos.sort((a, b) => b._timestamp - a._timestamp || a.name.localeCompare(b.name));
+        items.sort((a, b) => b._timestamp - a._timestamp || a.name.localeCompare(b.name));
       } else if (sortOrder === "date-asc") {
-        photos.sort((a, b) => a._timestamp - b._timestamp || a.name.localeCompare(b.name));
+        items.sort((a, b) => a._timestamp - b._timestamp || a.name.localeCompare(b.name));
       } else {
-        photos.sort((a, b) => a.name.localeCompare(b.name));
+        items.sort((a, b) => a.name.localeCompare(b.name));
       }
 
-      filteredPhotos = photos;
+      filteredMedia = items;
 
       el.folderGrid.innerHTML = "";
       if (visFolders.length > 0) {
@@ -1729,29 +1886,37 @@
       el.photoContainer.innerHTML = "";
       el.monthJumpBar.innerHTML = "";
 
-      if (filteredPhotos.length > 0) {
+      if (filteredMedia.length > 0) {
         el.photoSection.classList.remove("hidden");
-        el.photoCount.textContent = `${filteredPhotos.length}장`;
+        const videoCnt = filteredMedia.filter(m => m._isVideo).length;
+        const photoCnt = filteredMedia.length - videoCnt;
+        if (videoCnt > 0 && photoCnt > 0) {
+          el.photoCount.textContent = `사진 ${photoCnt}장 · 동영상 ${videoCnt}개`;
+        } else if (videoCnt > 0) {
+          el.photoCount.textContent = `동영상 ${videoCnt}개`;
+        } else {
+          el.photoCount.textContent = `${photoCnt}장`;
+        }
 
         if (sortOrder === "name-asc") {
           el.monthJumpBar.classList.add("hidden");
           const grid = document.createElement("div");
           grid.className = "photo-grid";
-          filteredPhotos.forEach((photo, idx) => {
-            grid.appendChild(createPhotoCardElement(photo, idx));
+          filteredMedia.forEach((item, idx) => {
+            grid.appendChild(createMediaCardElement(item, idx));
           });
           el.photoContainer.appendChild(grid);
         } else {
           const groups = [];
           const groupMap = new Map();
 
-          filteredPhotos.forEach((photo, idx) => {
-            if (!groupMap.has(photo._monthKey)) {
-              const g = { key: photo._monthKey, label: photo._monthLabel, items: [] };
-              groupMap.set(photo._monthKey, g);
+          filteredMedia.forEach((item, idx) => {
+            if (!groupMap.has(item._monthKey)) {
+              const g = { key: item._monthKey, label: item._monthLabel, items: [] };
+              groupMap.set(item._monthKey, g);
               groups.push(g);
             }
-            groupMap.get(photo._monthKey).items.push({ photo, globalIdx: idx });
+            groupMap.get(item._monthKey).items.push({ item, globalIdx: idx });
           });
 
           if (groups.length > 1) {
@@ -1787,14 +1952,14 @@
                 <span class="month-toggle-icon">▼</span>
                 <span>${g.label}</span>
               </div>
-              <span class="month-count-badge">${g.items.length}장</span>
+              <span class="month-count-badge">${g.items.length}개</span>
             `;
             header.onclick = () => section.classList.toggle("collapsed");
 
             const grid = document.createElement("div");
             grid.className = "photo-grid";
-            g.items.forEach(({ photo, globalIdx }) => {
-              grid.appendChild(createPhotoCardElement(photo, globalIdx));
+            g.items.forEach(({ item, globalIdx }) => {
+              grid.appendChild(createMediaCardElement(item, globalIdx));
             });
 
             section.appendChild(header);
@@ -1807,15 +1972,27 @@
         el.monthJumpBar.classList.add("hidden");
       }
 
-      if (visFolders.length === 0 && filteredPhotos.length === 0) {
+      if (visFolders.length === 0 && filteredMedia.length === 0) {
         el.emptyFolderMsg.classList.remove("hidden");
       } else {
         el.emptyFolderMsg.classList.add("hidden");
       }
     }
 
+    function releaseActiveVideo() {
+      videoLoadRequestId++;
+      el.lbVideo.pause();
+      el.lbVideo.removeAttribute("src");
+      el.lbVideo.load();
+      el.lbVideoLoading.classList.add("hidden");
+      if (activeVideoObjectUrl) {
+        URL.revokeObjectURL(activeVideoObjectUrl);
+        activeVideoObjectUrl = null;
+      }
+    }
+
     function openLightbox(index) {
-      currentPhotoIndex = index;
+      currentMediaIndex = index;
       updateLightbox();
       el.lightbox.classList.add("open");
     }
@@ -1823,31 +2000,78 @@
     function closeLightbox() {
       el.lightbox.classList.remove("open");
       el.lbImage.src = "";
+      releaseActiveVideo();
+    }
+
+    async function loadVideoStream(item) {
+      const reqId = ++videoLoadRequestId;
+      el.lbImage.classList.add("hidden");
+      el.lbImage.src = "";
+      el.lbVideoWrap.classList.remove("hidden");
+      el.lbVideoLoading.classList.remove("hidden");
+      el.lbVideo.poster = getHighResThumbnail(item.thumbnailLink, 1280);
+
+      try {
+        if (!isTokenValid() && wasLoggedIn) {
+          await refreshAccessTokenSilently();
+        }
+        const mediaUrl = `https://www.googleapis.com/drive/v3/files/${item.id}?alt=media`;
+        const res = await fetch(mediaUrl, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        if (!res.ok) {
+          throw new Error(`동영상 스트림 로드 실패 (${res.status})`);
+        }
+        const blob = await res.blob();
+        if (reqId !== videoLoadRequestId) return;
+
+        if (activeVideoObjectUrl) {
+          URL.revokeObjectURL(activeVideoObjectUrl);
+        }
+        activeVideoObjectUrl = URL.createObjectURL(blob);
+        el.lbVideo.src = activeVideoObjectUrl;
+        el.lbVideoLoading.classList.add("hidden");
+        el.lbVideo.play().catch(() => {});
+      } catch (err) {
+        if (reqId !== videoLoadRequestId) return;
+        el.lbVideoLoading.classList.add("hidden");
+        alert("브라우저에서 직접 재생할 수 없는 형식이거나 용량이 큽니다. 우측 상단 'Drive에서 열기 ↗'를 이용해 주세요.");
+      }
     }
 
     function updateLightbox() {
-      const photo = filteredPhotos[currentPhotoIndex];
-      if (!photo) return;
-      el.lbTitle.textContent = photo.name;
-      const dateInfo = photo._dateSource ? `${photo._dateSource} ${photo._dateStr}` : photo._dateStr;
-      el.lbCounter.textContent = `${currentPhotoIndex + 1} / ${filteredPhotos.length}  ·  ${dateInfo}`;
-      el.lbDriveLink.href = photo.webViewLink || `https://drive.google.com/file/d/${photo.id}/view`;
-      el.lbImage.src = getHighResThumbnail(photo.thumbnailLink, 2048);
+      const item = filteredMedia[currentMediaIndex];
+      if (!item) return;
+
+      releaseActiveVideo();
+
+      el.lbTitle.textContent = item.name;
+      const dateInfo = item._dateSource ? `${item._dateSource} ${item._dateStr}` : item._dateStr;
+      const durInfo = item._durationText ? `  ·  ${item._durationText}` : "";
+      el.lbCounter.textContent = `${currentMediaIndex + 1} / ${filteredMedia.length}  ·  ${dateInfo}${durInfo}`;
+      el.lbDriveLink.href = item.webViewLink || `https://drive.google.com/file/d/${item.id}/view`;
+
+      if (item._isVideo) {
+        loadVideoStream(item);
+      } else {
+        el.lbVideoWrap.classList.add("hidden");
+        el.lbImage.classList.remove("hidden");
+        el.lbImage.src = getHighResThumbnail(item.thumbnailLink, 2048);
+      }
     }
 
-    function prevPhoto() {
-      if (filteredPhotos.length === 0) return;
-      currentPhotoIndex = (currentPhotoIndex - 1 + filteredPhotos.length) % filteredPhotos.length;
+    function prevMedia() {
+      if (filteredMedia.length === 0) return;
+      currentMediaIndex = (currentMediaIndex - 1 + filteredMedia.length) % filteredMedia.length;
       updateLightbox();
     }
 
-    function nextPhoto() {
-      if (filteredPhotos.length === 0) return;
-      currentPhotoIndex = (currentPhotoIndex + 1) % filteredPhotos.length;
+    function nextMedia() {
+      if (filteredMedia.length === 0) return;
+      currentMediaIndex = (currentMediaIndex + 1) % filteredMedia.length;
       updateLightbox();
     }
 
-    // 정렬 팝업 메뉴 열기/닫기 및 선택 이벤트
     function closeSortMenu() {
       el.sortMenu.classList.remove("open");
       el.btnSortMenu.classList.remove("active-menu");
@@ -1913,15 +2137,15 @@
     };
 
     el.lbClose.onclick = closeLightbox;
-    el.lbPrev.onclick = prevPhoto;
-    el.lbNext.onclick = nextPhoto;
+    el.lbPrev.onclick = prevMedia;
+    el.lbNext.onclick = nextMedia;
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeSortMenu();
       if (!el.lightbox.classList.contains("open")) return;
       if (e.key === "Escape") closeLightbox();
-      if (e.key === "ArrowLeft") prevPhoto();
-      if (e.key === "ArrowRight") nextPhoto();
+      if (e.key === "ArrowLeft") prevMedia();
+      if (e.key === "ArrowRight") nextMedia();
     });
 
     let touchStartX = 0;
@@ -1932,8 +2156,8 @@
     el.lbBody.addEventListener("touchend", (e) => {
       const diff = e.changedTouches[0].screenX - touchStartX;
       if (Math.abs(diff) > 50) {
-        if (diff > 0) prevPhoto();
-        else nextPhoto();
+        if (diff > 0) prevMedia();
+        else nextMedia();
       }
     }, { passive: true });
 
