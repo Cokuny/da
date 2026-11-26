@@ -9,21 +9,19 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="드라이브 앨범" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Drive Photo Album</title>
+  <title>Drive Photo Album (V1.3.0)</title>
 
-  <!-- PWA 아이콘 & Manifest 동적 등록 (단일 HTML 파일만으로 갤럭시 홈 화면 설치 지원) -->
+  <!-- PWA 아이콘 & Manifest 동적 등록 -->
   <link id="pwa-manifest" rel="manifest" />
   <link id="pwa-icon" rel="icon" type="image/png" />
   <link id="apple-icon" rel="apple-touch-icon" />
   <script>
     (function setupPwaManifest() {
-      // 512x512 전용 앨범 아이콘 생성
       const canvas = document.createElement("canvas");
       canvas.width = 512;
       canvas.height = 512;
       const ctx = canvas.getContext("2d");
 
-      // 배경 그라데이션 (파란색~인디고 계열로 기존 차계부 아이콘과 명확히 구분)
       const grad = ctx.createLinearGradient(0, 0, 512, 512);
       grad.addColorStop(0, "#2563eb");
       grad.addColorStop(1, "#1e3a8a");
@@ -32,19 +30,16 @@
       ctx.roundRect(0, 0, 512, 512, 112);
       ctx.fill();
 
-      // 앨범 프레임 외곽선
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 26;
       ctx.lineJoin = "round";
       ctx.strokeRect(106, 126, 300, 260);
 
-      // 태양(원)
       ctx.fillStyle = "#fde047";
       ctx.beginPath();
       ctx.arc(185, 202, 28, 0, Math.PI * 2);
       ctx.fill();
 
-      // 산 풍경 실루엣
       ctx.fillStyle = "#93c5fd";
       ctx.beginPath();
       ctx.moveTo(118, 374);
@@ -59,7 +54,6 @@
       document.getElementById("pwa-icon").href = iconDataUrl;
       document.getElementById("apple-icon").href = iconDataUrl;
 
-      // 현재 페이지 경로를 기준으로 고유 start_url 및 id 설정
       const baseUrl = window.location.origin + window.location.pathname;
       const manifestObj = {
         id: window.location.pathname,
@@ -119,7 +113,6 @@
       flex-direction: column;
     }
 
-    /* Header */
     header {
       background-color: rgba(15, 23, 42, 0.92);
       backdrop-filter: blur(10px);
@@ -151,6 +144,25 @@
 
     .brand svg {
       color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .version-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background-color: rgba(59, 130, 246, 0.16);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.15s ease;
+    }
+
+    .version-badge:hover {
+      background-color: rgba(59, 130, 246, 0.3);
+      color: #fff;
     }
 
     .header-actions {
@@ -199,7 +211,6 @@
       background-color: rgba(239, 68, 68, 0.15);
     }
 
-    /* Toolbar & Breadcrumb */
     .toolbar {
       max-width: 1400px;
       width: 100%;
@@ -267,7 +278,6 @@
       border-color: var(--accent);
     }
 
-    /* Main Content */
     main {
       max-width: 1400px;
       width: 100%;
@@ -278,7 +288,6 @@
       flex-direction: column;
     }
 
-    /* Login Landing Page */
     .login-wrapper {
       flex: 1;
       display: flex;
@@ -312,8 +321,19 @@
 
     .login-card h1 {
       font-size: 1.4rem;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
       letter-spacing: -0.02em;
+    }
+
+    .login-version-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      color: #93c5fd;
+      background: rgba(59, 130, 246, 0.14);
+      padding: 2px 10px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+      font-weight: 600;
     }
 
     .login-card p {
@@ -372,7 +392,6 @@
       to { transform: rotate(360deg); }
     }
 
-    /* Section & Grids */
     .section-title {
       font-size: 0.85rem;
       text-transform: uppercase;
@@ -491,7 +510,7 @@
       text-overflow: ellipsis;
     }
 
-    /* Modal (Folder Picker & Settings) */
+    /* Modal */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -513,7 +532,7 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       width: 100%;
-      max-width: 520px;
+      max-width: 540px;
       padding: 22px;
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
     }
@@ -526,16 +545,55 @@
     .modal-desc {
       font-size: 0.85rem;
       color: var(--text-secondary);
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       line-height: 1.45;
     }
 
+    .modal-nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      padding: 8px 10px;
+      font-size: 0.82rem;
+    }
+
+    .modal-crumbs {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      overflow: hidden;
+    }
+
+    .modal-crumb {
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .modal-crumb:hover {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .modal-crumb.active {
+      color: var(--accent);
+      font-weight: 600;
+      cursor: default;
+    }
+
     .quick-folder-list {
-      max-height: 210px;
+      max-height: 240px;
       overflow-y: auto;
       background-color: var(--bg-primary);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 0 0 8px 8px;
       padding: 6px;
       margin-bottom: 14px;
       display: flex;
@@ -547,12 +605,13 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 9px 12px;
+      padding: 8px 10px;
       border-radius: 6px;
       cursor: pointer;
       font-size: 0.88rem;
       border: 1px solid transparent;
       transition: background 0.15s;
+      gap: 8px;
     }
 
     .quick-folder-item:hover {
@@ -571,12 +630,29 @@
       align-items: center;
       gap: 8px;
       overflow: hidden;
+      flex: 1;
     }
 
     .quick-folder-left span {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .btn-enter-subfolder {
+      padding: 4px 8px;
+      font-size: 0.76rem;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .btn-enter-subfolder:hover {
+      color: #fff;
+      border-color: var(--accent);
+      background-color: var(--bg-hover);
     }
 
     .form-group {
@@ -617,6 +693,46 @@
       justify-content: flex-end;
       gap: 8px;
       margin-top: 18px;
+    }
+
+    /* Version History List */
+    .changelog-list {
+      max-height: 280px;
+      overflow-y: auto;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 0.85rem;
+    }
+
+    .changelog-item h4 {
+      color: #93c5fd;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    .changelog-item ul {
+      padding-left: 18px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      border-top: 1px solid rgba(51, 65, 85, 0.4);
+    }
+
+    footer span {
+      cursor: pointer;
+      text-decoration: underline;
     }
 
     /* Lightbox Viewer */
@@ -708,7 +824,6 @@
 </head>
 <body>
 
-  <!-- Header -->
   <header>
     <div class="header-top">
       <div class="brand">
@@ -718,6 +833,7 @@
           <polyline points="21 15 16 10 5 21"></polyline>
         </svg>
         <span>Drive Photo Album</span>
+        <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.3.0</span>
       </div>
       <div class="header-actions">
         <button id="btnChangeFolder" class="hidden" title="불러올 기준 폴더 변경">📁 폴더 변경</button>
@@ -728,7 +844,6 @@
     </div>
   </header>
 
-  <!-- Breadcrumb & Search Toolbar -->
   <div id="toolbar" class="toolbar hidden">
     <nav id="breadcrumb" class="breadcrumb"></nav>
     <div class="search-box">
@@ -736,9 +851,7 @@
     </div>
   </div>
 
-  <!-- Main Content -->
   <main id="mainContainer">
-    <!-- 1. 초기 로그인 화면 -->
     <div id="loginView" class="login-wrapper">
       <div class="login-card">
         <div class="login-icon">
@@ -749,7 +862,8 @@
           </svg>
         </div>
         <h1>Drive Photo Album</h1>
-        <p>구글 드라이브에 정리된 사진 폴더를<br>계층 구조 그대로 앨범처럼 열람합니다.<br>로그인 후 불러올 폴더를 선택할 수 있습니다.</p>
+        <div class="login-version-tag">Version 1.3.0</div>
+        <p>구글 드라이브에 정리된 사진 폴더를<br>계층 구조 그대로 앨범처럼 열람합니다.<br>한 번 로그인하면 브라우저를 닫아도 유지됩니다.</p>
         <button id="btnMainLogin" class="primary btn-google-login">Google 계정으로 로그인</button>
         <div class="login-sub-action">
           읽기 전용 권한(drive.readonly)만 사용하므로 원본 파일은 수정되지 않습니다.
@@ -757,13 +871,11 @@
       </div>
     </div>
 
-    <!-- Loading View -->
     <div id="loadingView" class="center-box hidden">
       <div class="spinner"></div>
       <p id="loadingText">구글 드라이브 정보를 불러오는 중...</p>
     </div>
 
-    <!-- Gallery View -->
     <div id="galleryView" class="hidden">
       <div id="folderSection">
         <div class="section-title">
@@ -788,14 +900,22 @@
     </div>
   </main>
 
-  <!-- 2. 로그인 직후 폴더 선택/확인 모달 -->
+  <footer>
+    Drive Photo Album · <span id="footerVersionLink">V1.3.0 업데이트 내역</span>
+  </footer>
+
+  <!-- 폴더 선택 및 계층 탐색 모달 -->
   <div id="folderSelectModal" class="modal-backdrop">
     <div class="modal">
       <h3>어느 폴더에서 사진을 불러올까요?</h3>
-      <p class="modal-desc">아래 목록에서 폴더를 선택하거나, 특정 Google Drive 폴더 URL 또는 ID를 직접 입력해 주세요.</p>
+      <p class="modal-desc">폴더를 클릭해 선택하거나, 우측 <b>하위 열기 ❯</b> 버튼으로 하위 폴더까지 들어가서 지정할 수 있습니다.</p>
 
-      <div class="form-group">
-        <label>내 드라이브 최상위 폴더 빠른 선택</label>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label>구글 드라이브 폴더 탐색</label>
+        <div class="modal-nav-bar">
+          <div id="modalCrumbs" class="modal-crumbs"></div>
+          <button type="button" id="btnSelectCurrentModalDir" style="padding:3px 8px; font-size:0.75rem;">현재 위치 선택</button>
+        </div>
         <div id="quickFolderList" class="quick-folder-list">
           <div style="padding:12px; text-align:center; color:var(--text-secondary); font-size:0.85rem;">폴더 목록 조회 중...</div>
         </div>
@@ -805,13 +925,52 @@
         <label for="inputTargetFolder">선택된 폴더 ID 또는 Google Drive 폴더 링크</label>
         <input type="text" id="inputTargetFolder" placeholder="비워두면 내 드라이브 전체(root)에서 시작" />
         <div class="form-hint">
-          • 팁: 하위 폴더를 시작점으로 삼으려면 구글 드라이브에서 해당 폴더를 연 뒤 주소창 URL을 그대로 붙여넣으세요.
+          • 선택한 폴더가 기본 앨범 홈으로 저장되며, 다음 접속 시에도 기억됩니다.
         </div>
       </div>
 
       <div class="modal-footer">
         <button id="btnCancelFolderSelect" class="hidden">취소</button>
         <button id="btnConfirmFolderSelect" class="primary">이 폴더 불러오기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 버전 정보 모달 -->
+  <div id="versionModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Drive Photo Album · V1.3.0</h3>
+      <p class="modal-desc">Google Drive 폴더 기반 전용 사진 갤러리 PWA 웹 앱입니다.</p>
+      <div class="changelog-list">
+        <div class="changelog-item">
+          <h4>V1.3.0 (현재 버전)</h4>
+          <ul>
+            <li>헤더·로그인 화면·하단 버전 배지(V1.3.0) 및 업데이트 내역 팝업 추가</li>
+            <li>폴더 선택/변경 창 내 다단계 하위 폴더 탐색(하위 열기 ❯ 및 경로 이동) 지원</li>
+            <li>로그인 상태 영구 유지 및 토큰 만료 시 자동 복원 처리</li>
+          </ul>
+        </div>
+        <div class="changelog-item">
+          <h4>V1.2.0</h4>
+          <ul>
+            <li>갤럭시 스마트폰 홈 화면 추가용 독립 PWA Manifest 및 전용 아이콘 내장</li>
+          </ul>
+        </div>
+        <div class="changelog-item">
+          <h4>V1.1.0</h4>
+          <ul>
+            <li>로그인 직후 불러올 폴더 선택/확인 팝업 및 빠른 폴더 선택 목록 추가</li>
+          </ul>
+        </div>
+        <div class="changelog-item">
+          <h4>V1.0.0</h4>
+          <ul>
+            <li>Google Drive 읽기 전용(drive.readonly) 폴더 계층 갤러리 및 라이트박스 뷰어 최초 구현</li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnCloseVersionModal" class="primary">확인</button>
       </div>
     </div>
   </div>
@@ -854,21 +1013,25 @@
   </div>
 
   <script>
+    const APP_VERSION = "V1.3.0";
     const DEFAULT_CLIENT_ID = "126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com";
     const SCOPES = "https://www.googleapis.com/auth/drive.readonly";
 
     let tokenClient = null;
-    let accessToken = sessionStorage.getItem("gd_album_token") || null;
+    let accessToken = localStorage.getItem("gd_album_token") || null;
+    let tokenExpiry = Number(localStorage.getItem("gd_album_token_expiry") || 0);
+    let wasLoggedIn = localStorage.getItem("gd_album_logged_in") === "true";
     let clientId = localStorage.getItem("gd_album_client_id") || DEFAULT_CLIENT_ID;
     let savedRootFolderId = localStorage.getItem("gd_album_root_id") || "";
 
-    // 탐색 상태
     let folderStack = [];
+    let modalBrowseStack = [{ id: "root", name: "내 드라이브" }];
     let currentFolders = [];
     let currentPhotos = [];
     let filteredPhotos = [];
     let currentPhotoIndex = 0;
     let hasLoadedInitialGallery = false;
+    let pendingSilentAction = null;
 
     const el = {
       loginView: document.getElementById("loginView"),
@@ -890,7 +1053,13 @@
       btnRefresh: document.getElementById("btnRefresh"),
       btnChangeFolder: document.getElementById("btnChangeFolder"),
       btnClientSettings: document.getElementById("btnClientSettings"),
+      versionBadge: document.getElementById("versionBadge"),
+      footerVersionLink: document.getElementById("footerVersionLink"),
+      versionModal: document.getElementById("versionModal"),
+      btnCloseVersionModal: document.getElementById("btnCloseVersionModal"),
       folderSelectModal: document.getElementById("folderSelectModal"),
+      modalCrumbs: document.getElementById("modalCrumbs"),
+      btnSelectCurrentModalDir: document.getElementById("btnSelectCurrentModalDir"),
       quickFolderList: document.getElementById("quickFolderList"),
       inputTargetFolder: document.getElementById("inputTargetFolder"),
       btnConfirmFolderSelect: document.getElementById("btnConfirmFolderSelect"),
@@ -917,6 +1086,19 @@
       return match ? match[1] : val;
     }
 
+    function isTokenValid() {
+      return accessToken && Date.now() < tokenExpiry - 60000;
+    }
+
+    function saveTokenSession(token, expiresInSec = 3500) {
+      accessToken = token;
+      tokenExpiry = Date.now() + expiresInSec * 1000;
+      wasLoggedIn = true;
+      localStorage.setItem("gd_album_token", accessToken);
+      localStorage.setItem("gd_album_token_expiry", String(tokenExpiry));
+      localStorage.setItem("gd_album_logged_in", "true");
+    }
+
     function initGis() {
       if (!window.google || !google.accounts) {
         setTimeout(initGis, 300);
@@ -927,22 +1109,40 @@
         scope: SCOPES,
         callback: (resp) => {
           if (resp.error) {
+            if (pendingSilentAction) {
+              pendingSilentAction = null;
+              el.loadingView.classList.add("hidden");
+              el.loginView.classList.remove("hidden");
+              return;
+            }
             alert("로그인 오류: " + resp.error);
             return;
           }
-          accessToken = resp.access_token;
-          sessionStorage.setItem("gd_album_token", accessToken);
-          onLoginSuccess();
+          saveTokenSession(resp.access_token, resp.expires_in || 3500);
+          if (pendingSilentAction) {
+            const fn = pendingSilentAction;
+            pendingSilentAction = null;
+            fn();
+          } else {
+            onLoginSuccess();
+          }
         }
       });
 
-      if (accessToken) {
-        onLoginSuccess();
+      if (isTokenValid()) {
+        onAutoResumeLogin();
+      } else if (wasLoggedIn) {
+        el.loginView.classList.add("hidden");
+        el.loadingView.classList.remove("hidden");
+        el.loadingText.textContent = "로그인 세션을 자동으로 복원하는 중...";
+        pendingSilentAction = () => onAutoResumeLogin();
+        tokenClient.requestAccessToken({ prompt: "" });
       }
     }
 
     function handleLogin() {
       if (!tokenClient) return;
+      pendingSilentAction = null;
       tokenClient.requestAccessToken({ prompt: "" });
     }
 
@@ -951,8 +1151,13 @@
         google.accounts.oauth2.revoke(accessToken, () => {});
       }
       accessToken = null;
+      tokenExpiry = 0;
+      wasLoggedIn = false;
       hasLoadedInitialGallery = false;
-      sessionStorage.removeItem("gd_album_token");
+      localStorage.removeItem("gd_album_token");
+      localStorage.removeItem("gd_album_token_expiry");
+      localStorage.removeItem("gd_album_logged_in");
+
       el.btnLogout.classList.add("hidden");
       el.btnRefresh.classList.add("hidden");
       el.btnChangeFolder.classList.add("hidden");
@@ -965,16 +1170,48 @@
 
     function onLoginSuccess() {
       el.loginView.classList.add("hidden");
+      el.loadingView.classList.add("hidden");
       el.btnLogout.classList.remove("hidden");
       el.btnChangeFolder.classList.remove("hidden");
       openFolderSelectorModal(false);
     }
 
-    async function fetchDriveApi(url) {
+    function onAutoResumeLogin() {
+      el.loginView.classList.add("hidden");
+      el.loadingView.classList.add("hidden");
+      el.btnLogout.classList.remove("hidden");
+      el.btnChangeFolder.classList.remove("hidden");
+      if (savedRootFolderId) {
+        el.inputTargetFolder.value = savedRootFolderId === "root" ? "" : savedRootFolderId;
+        confirmAndLoadRoot();
+      } else {
+        openFolderSelectorModal(false);
+      }
+    }
+
+    function refreshAccessTokenSilently() {
+      return new Promise((resolve, reject) => {
+        if (!tokenClient) {
+          reject(new Error("Google 인증 클라이언트가 준비되지 않았습니다."));
+          return;
+        }
+        pendingSilentAction = () => resolve();
+        tokenClient.requestAccessToken({ prompt: "" });
+      });
+    }
+
+    async function fetchDriveApi(url, retry = true) {
+      if (!isTokenValid() && wasLoggedIn && retry) {
+        await refreshAccessTokenSilently();
+      }
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       if (res.status === 401) {
+        if (retry && wasLoggedIn) {
+          await refreshAccessTokenSilently();
+          return fetchDriveApi(url, false);
+        }
         handleLogout();
         throw new Error("인증 세션이 만료되었습니다. 다시 로그인해 주세요.");
       }
@@ -993,50 +1230,108 @@
         el.btnCancelFolderSelect.classList.add("hidden");
       }
 
+      modalBrowseStack = [{ id: "root", name: "내 드라이브" }];
       el.folderSelectModal.classList.add("open");
-      el.quickFolderList.innerHTML = `<div style="padding:12px; text-align:center; color:var(--text-secondary); font-size:0.85rem;">내 드라이브 폴더 목록을 불러오는 중...</div>`;
+      await loadModalFolderList("root");
+    }
+
+    function renderModalBreadcrumbs() {
+      el.modalCrumbs.innerHTML = "";
+      modalBrowseStack.forEach((item, idx) => {
+        const span = document.createElement("span");
+        span.className = "modal-crumb" + (idx === modalBrowseStack.length - 1 ? " active" : "");
+        span.textContent = item.name;
+        if (idx < modalBrowseStack.length - 1) {
+          span.onclick = () => {
+            modalBrowseStack = modalBrowseStack.slice(0, idx + 1);
+            loadModalFolderList(item.id);
+          };
+        }
+        el.modalCrumbs.appendChild(span);
+
+        if (idx < modalBrowseStack.length - 1) {
+          const sep = document.createElement("span");
+          sep.style.color = "var(--text-secondary)";
+          sep.textContent = "/";
+          el.modalCrumbs.appendChild(sep);
+        }
+      });
+    }
+
+    async function loadModalFolderList(parentId) {
+      renderModalBreadcrumbs();
+      el.quickFolderList.innerHTML = `<div style="padding:14px; text-align:center; color:var(--text-secondary); font-size:0.85rem;">하위 폴더 목록을 불러오는 중...</div>`;
 
       try {
-        const q = `'root' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'`;
+        const q = `'${parentId}' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'`;
         const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&orderBy=name&pageSize=100`;
         const data = await fetchDriveApi(url);
         const folders = data.files || [];
 
-        renderQuickFolderList(folders);
+        renderQuickFolderList(folders, parentId);
       } catch (err) {
         el.quickFolderList.innerHTML = `<div style="padding:12px; text-align:center; color:#fca5a5; font-size:0.83rem;">목록을 불러오지 못했습니다. 아래에 폴더 ID나 링크를 직접 입력해 주세요.</div>`;
       }
     }
 
-    function renderQuickFolderList(folders) {
+    function renderQuickFolderList(folders, parentId) {
       el.quickFolderList.innerHTML = "";
       const currentTarget = extractFolderId(el.inputTargetFolder.value);
 
-      const rootItem = document.createElement("div");
-      rootItem.className = "quick-folder-item" + (currentTarget === "root" ? " selected" : "");
-      rootItem.innerHTML = `
+      const currentDirObj = modalBrowseStack[modalBrowseStack.length - 1];
+      const selfItem = document.createElement("div");
+      selfItem.className = "quick-folder-item" + (currentTarget === currentDirObj.id ? " selected" : "");
+      selfItem.innerHTML = `
         <div class="quick-folder-left">
-          <span>🏠 내 드라이브 전체 (최상위)</span>
+          <span>${parentId === "root" ? "🏠 내 드라이브 전체 (최상위)" : "📂 [현재 폴더] " + currentDirObj.name}</span>
         </div>
       `;
-      rootItem.onclick = () => {
-        el.inputTargetFolder.value = "";
-        highlightSelectedQuickItem(rootItem);
+      selfItem.onclick = () => {
+        el.inputTargetFolder.value = parentId === "root" ? "" : parentId;
+        highlightSelectedQuickItem(selfItem);
       };
-      el.quickFolderList.appendChild(rootItem);
+      el.quickFolderList.appendChild(selfItem);
+
+      if (folders.length === 0) {
+        const emptyNotice = document.createElement("div");
+        emptyNotice.style.cssText = "padding:12px; text-align:center; color:var(--text-secondary); font-size:0.82rem;";
+        emptyNotice.textContent = "이 폴더 안에 더 이상 하위 폴더가 없습니다.";
+        el.quickFolderList.appendChild(emptyNotice);
+        return;
+      }
 
       folders.forEach(f => {
         const item = document.createElement("div");
         item.className = "quick-folder-item" + (currentTarget === f.id ? " selected" : "");
-        item.innerHTML = `
-          <div class="quick-folder-left">
-            <span>📁 ${f.name}</span>
-          </div>
-        `;
+
+        const leftDiv = document.createElement("div");
+        leftDiv.className = "quick-folder-left";
+        leftDiv.innerHTML = `<span>📁 ${f.name}</span>`;
+
+        const enterBtn = document.createElement("button");
+        enterBtn.type = "button";
+        enterBtn.className = "btn-enter-subfolder";
+        enterBtn.textContent = "하위 열기 ❯";
+        enterBtn.onclick = (e) => {
+          e.stopPropagation();
+          el.inputTargetFolder.value = f.id;
+          modalBrowseStack.push({ id: f.id, name: f.name });
+          loadModalFolderList(f.id);
+        };
+
         item.onclick = () => {
           el.inputTargetFolder.value = f.id;
           highlightSelectedQuickItem(item);
         };
+
+        item.ondblclick = () => {
+          el.inputTargetFolder.value = f.id;
+          modalBrowseStack.push({ id: f.id, name: f.name });
+          loadModalFolderList(f.id);
+        };
+
+        item.appendChild(leftDiv);
+        item.appendChild(enterBtn);
         el.quickFolderList.appendChild(item);
       });
     }
@@ -1073,6 +1368,7 @@
     async function loadFolder(folderId) {
       el.galleryView.classList.add("hidden");
       el.loadingView.classList.remove("hidden");
+      el.loadingText.textContent = "구글 드라이브 폴더를 불러오는 중...";
       el.searchInput.value = "";
       renderBreadcrumb();
 
@@ -1227,7 +1523,6 @@
       updateLightbox();
     }
 
-    // 이벤트 연결
     el.btnMainLogin.onclick = handleLogin;
     el.btnLogout.onclick = handleLogout;
     el.btnRefresh.onclick = () => {
@@ -1235,11 +1530,20 @@
       if (current) loadFolder(current.id);
     };
     el.btnChangeFolder.onclick = () => openFolderSelectorModal(true);
+    el.btnSelectCurrentModalDir.onclick = () => {
+      const currentDirObj = modalBrowseStack[modalBrowseStack.length - 1];
+      el.inputTargetFolder.value = currentDirObj.id === "root" ? "" : currentDirObj.id;
+      loadModalFolderList(currentDirObj.id);
+    };
     el.btnConfirmFolderSelect.onclick = confirmAndLoadRoot;
     el.btnCancelFolderSelect.onclick = () => el.folderSelectModal.classList.remove("open");
     el.searchInput.oninput = renderItems;
 
-    // Client ID 모달
+    // 버전 모달 제어
+    el.versionBadge.onclick = () => el.versionModal.classList.add("open");
+    el.footerVersionLink.onclick = () => el.versionModal.classList.add("open");
+    el.btnCloseVersionModal.onclick = () => el.versionModal.classList.remove("open");
+
     el.btnClientSettings.onclick = () => {
       el.inputClientId.value = clientId;
       el.clientModal.classList.add("open");
@@ -1252,7 +1556,6 @@
       initGis();
     };
 
-    // 라이트박스 제어
     el.lbClose.onclick = closeLightbox;
     el.lbPrev.onclick = prevPhoto;
     el.lbNext.onclick = nextPhoto;
