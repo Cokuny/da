@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0f172a" />
-  <meta name="application-name" content="드라이브 앨범" />
+  <meta name="application-name" content="Work Album" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="드라이브 앨범" />
+  <meta name="apple-mobile-web-app-title" content="Work Album" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Drive Photo Album (V1.4.1)</title>
+  <title>Work Album (V1.5.0)</title>
 
   <!-- 고해상도 스퀴클 PWA 아이콘 & Manifest 동적 등록 -->
   <link id="pwa-manifest" rel="manifest" />
@@ -152,26 +152,22 @@
       ctx.fill();
 
       ctx.shadowColor = "transparent";
-      // 드라이브 삼각 리본 아이콘 (초록 / 노랑 / 파랑)
       ctx.lineWidth = 13;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
-      // 좌측 변 (초록)
       ctx.strokeStyle = "#22c55e";
       ctx.beginPath();
       ctx.moveTo(-2, -24);
       ctx.lineTo(-24, 15);
       ctx.stroke();
 
-      // 우측 변 (노랑)
       ctx.strokeStyle = "#eab308";
       ctx.beginPath();
       ctx.moveTo(2, -24);
       ctx.lineTo(24, 15);
       ctx.stroke();
 
-      // 하단 변 (파랑)
       ctx.strokeStyle = "#3b82f6";
       ctx.beginPath();
       ctx.moveTo(-20, 20);
@@ -186,9 +182,9 @@
       const baseUrl = window.location.origin + window.location.pathname;
       const manifestObj = {
         id: window.location.pathname,
-        name: "Drive Photo Album",
-        short_name: "드라이브 앨범",
-        description: "Google Drive 폴더 기반 사진 앨범 뷰어",
+        name: "Work Album",
+        short_name: "Work Album",
+        description: "Google Drive 폴더 기반 업무용 사진 앨범 뷰어",
         start_url: baseUrl,
         scope: baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1),
         display: "standalone",
@@ -264,17 +260,23 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 9px;
       font-weight: 700;
       font-size: 1.15rem;
       letter-spacing: -0.02em;
+      min-width: 0;
+    }
+
+    .brand span.app-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .brand-icon {
@@ -296,6 +298,7 @@
       cursor: pointer;
       letter-spacing: 0.02em;
       transition: all 0.15s ease;
+      flex-shrink: 0;
     }
 
     .version-badge:hover {
@@ -306,8 +309,8 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap: 6px;
+      flex-shrink: 0;
     }
 
     button {
@@ -324,6 +327,13 @@
       justify-content: center;
       gap: 6px;
       transition: all 0.15s ease;
+    }
+
+    button.icon-btn {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border-radius: 9px;
     }
 
     button:hover {
@@ -398,9 +408,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      flex-wrap: wrap;
-      flex: 1;
-      justify-content: flex-end;
+      margin-left: auto;
     }
 
     .sort-select {
@@ -415,28 +423,6 @@
     }
 
     .sort-select:focus {
-      border-color: var(--accent);
-    }
-
-    .search-box {
-      position: relative;
-      min-width: 180px;
-      max-width: 280px;
-      flex: 1;
-    }
-
-    .search-box input {
-      width: 100%;
-      background-color: var(--bg-secondary);
-      border: 1px solid var(--border);
-      color: var(--text-primary);
-      padding: 7px 12px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      outline: none;
-    }
-
-    .search-box input:focus {
       border-color: var(--accent);
     }
 
@@ -479,7 +465,7 @@
     }
 
     .login-card h1 {
-      font-size: 1.4rem;
+      font-size: 1.45rem;
       margin-bottom: 6px;
       letter-spacing: -0.02em;
     }
@@ -1073,15 +1059,40 @@
   <header>
     <div class="header-top">
       <div class="brand">
-        <img id="headerBrandIcon" class="brand-icon" alt="Drive Photo Album" />
-        <span>Drive Photo Album</span>
-        <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.4.1</span>
+        <img id="headerBrandIcon" class="brand-icon" alt="Work Album" />
+        <span class="app-title">Work Album</span>
+        <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.5.0</span>
       </div>
       <div class="header-actions">
-        <button id="btnChangeFolder" class="hidden" title="불러올 기준 폴더 변경">📁 폴더 변경</button>
-        <button id="btnRefresh" class="hidden" title="새로고침">🔄 새로고침</button>
-        <button id="btnClientSettings" title="OAuth Client ID 설정">⚙️ API 설정</button>
-        <button id="btnLogout" class="danger hidden">로그아웃</button>
+        <!-- 폴더 변경 아이콘 버튼 -->
+        <button id="btnChangeFolder" class="icon-btn hidden" title="폴더 변경" aria-label="폴더 변경">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </button>
+        <!-- 새로고침 아이콘 버튼 -->
+        <button id="btnRefresh" class="icon-btn hidden" title="새로고침" aria-label="새로고침">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </button>
+        <!-- API 설정 아이콘 버튼 -->
+        <button id="btnClientSettings" class="icon-btn" title="API 설정" aria-label="API 설정">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+        <!-- 로그아웃 아이콘 버튼 -->
+        <button id="btnLogout" class="icon-btn danger hidden" title="로그아웃" aria-label="로그아웃">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
       </div>
     </div>
   </header>
@@ -1094,19 +1105,16 @@
         <option value="date-asc">📅 오래된 날짜순 (월별)</option>
         <option value="name-asc">🔤 파일명순</option>
       </select>
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="현재 폴더 내 이름 검색..." />
-      </div>
     </div>
   </div>
 
   <main id="mainContainer">
     <div id="loginView" class="login-wrapper">
       <div class="login-card">
-        <img id="loginAppIcon" class="login-app-icon" alt="Drive Photo Album" />
-        <h1>Drive Photo Album</h1>
-        <div class="login-version-tag">Version 1.4.1</div>
-        <p>구글 드라이브에 정리된 사진 폴더를<br>월별 타임라인과 계층 구조 그대로 열람합니다.<br>한 번 로그인하면 브라우저를 닫아도 유지됩니다.</p>
+        <img id="loginAppIcon" class="login-app-icon" alt="Work Album" />
+        <h1>Work Album</h1>
+        <div class="login-version-tag">Version 1.5.0</div>
+        <p>구글 드라이브에 정리된 업무 사진 폴더를<br>월별 타임라인과 계층 구조 그대로 열람합니다.<br>한 번 로그인하면 브라우저를 닫아도 유지됩니다.</p>
         <button id="btnMainLogin" class="primary btn-google-login">Google 계정으로 로그인</button>
         <div class="login-sub-action">
           읽기 전용 권한(drive.readonly)만 사용하므로 원본 파일은 수정되지 않습니다.
@@ -1139,13 +1147,13 @@
 
       <div id="emptyFolderMsg" class="center-box hidden">
         <h2>표시할 항목이 없습니다</h2>
-        <p>이 폴더에 하위 폴더나 이미지 파일이 없거나 검색 조건과 일치하지 않습니다.</p>
+        <p>이 폴더에 하위 폴더나 이미지 파일이 없습니다.</p>
       </div>
     </div>
   </main>
 
   <footer>
-    Drive Photo Album · <span id="footerVersionLink">V1.4.1 업데이트 내역</span>
+    Work Album · <span id="footerVersionLink">V1.5.0 업데이트 내역</span>
   </footer>
 
   <!-- 폴더 선택 및 계층 탐색 모달 -->
@@ -1183,40 +1191,33 @@
   <!-- 버전 정보 모달 -->
   <div id="versionModal" class="modal-backdrop">
     <div class="modal">
-      <h3>Drive Photo Album · V1.4.1</h3>
-      <p class="modal-desc">Google Drive 폴더 기반 전용 사진 갤러리 PWA 웹 앱입니다.</p>
+      <h3>Work Album · V1.5.0</h3>
+      <p class="modal-desc">Google Drive 폴더 기반 업무용 사진 갤러리 PWA 웹 앱입니다.</p>
       <div class="changelog-list">
         <div class="changelog-item">
-          <h4>V1.4.1 (현재 버전)</h4>
+          <h4>V1.5.0 (현재 버전)</h4>
           <ul>
-            <li>입체 폴라로이드 사진 카드 & Google Drive 컬러 배지가 적용된 고해상도 스퀴클 앱 아이콘 업그레이드</li>
-            <li>상단 헤더 및 로그인 화면에 전용 앱 아이콘 일체화 적용</li>
+            <li>앱 공식 명칭을 <b>Work Album</b>으로 변경 (웹 타이틀, 헤더, 홈 화면 PWA 이름 일괄 적용)</li>
+            <li>상단 헤더의 폴더 변경, 새로고침, API 설정, 로그아웃 버튼을 깔끔한 아이콘 버튼으로 개편</li>
+            <li>현재 폴더 내 이름 검색창을 제거하여 모바일·PC 상단 툴바 UI 간소화</li>
+          </ul>
+        </div>
+        <div class="changelog-item">
+          <h4>V1.4.1</h4>
+          <ul>
+            <li>입체 폴라로이드 사진 카드 & Google Drive 컬러 배지가 적용된 고해상도 스퀴클 앱 아이콘 적용</li>
           </ul>
         </div>
         <div class="changelog-item">
           <h4>V1.4.0</h4>
           <ul>
-            <li>사진 촬영일(EXIF) 및 생성일 기준 날짜순 자동 정렬(최신순/오래된순/파일명순) 추가</li>
-            <li>연·월별(YYYY년 MM월) 그룹 묶음 보기, 섹션 접기/펼치기 및 상단 월별 빠른 이동 바 지원</li>
+            <li>사진 촬영일(EXIF) 및 생성일 기준 날짜순 자동 정렬 및 연·월별(YYYY년 MM월) 그룹 묶음 지원</li>
           </ul>
         </div>
         <div class="changelog-item">
-          <h4>V1.3.0</h4>
+          <h4>V1.3.0 ~ V1.0.0</h4>
           <ul>
-            <li>버전 배지 및 업데이트 내역 팝업 추가</li>
-            <li>폴더 선택/변경 창 내 다단계 하위 폴더 탐색(하위 열기 ❯) 및 로그인 상태 영구 유지</li>
-          </ul>
-        </div>
-        <div class="changelog-item">
-          <h4>V1.2.0</h4>
-          <ul>
-            <li>갤럭시 스마트폰 홈 화면 추가용 독립 PWA Manifest 및 전용 아이콘 내장</li>
-          </ul>
-        </div>
-        <div class="changelog-item">
-          <h4>V1.1.0 ~ V1.0.0</h4>
-          <ul>
-            <li>로그인 직후 폴더 선택/확인 팝업, Google Drive 읽기 전용 계층 갤러리 및 라이트박스 뷰어 구현</li>
+            <li>다단계 하위 폴더 탐색, 로그인 상태 영구 유지, 읽기 전용 드라이브 뷰어 및 라이트박스 구현</li>
           </ul>
         </div>
       </div>
@@ -1264,7 +1265,6 @@
   </div>
 
   <script>
-    // 생성된 앱 아이콘을 헤더와 로그인 화면에도 즉시 연결
     (function syncBrandIcons() {
       const iconHref = document.getElementById("pwa-icon").href;
       if (iconHref) {
@@ -1273,7 +1273,7 @@
       }
     })();
 
-    const APP_VERSION = "V1.4.1";
+    const APP_VERSION = "V1.5.0";
     const DEFAULT_CLIENT_ID = "126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com";
     const SCOPES = "https://www.googleapis.com/auth/drive.readonly";
 
@@ -1302,7 +1302,6 @@
       toolbar: document.getElementById("toolbar"),
       breadcrumb: document.getElementById("breadcrumb"),
       sortSelect: document.getElementById("sortSelect"),
-      searchInput: document.getElementById("searchInput"),
       folderSection: document.getElementById("folderSection"),
       folderGrid: document.getElementById("folderGrid"),
       folderCount: document.getElementById("folderCount"),
@@ -1666,7 +1665,6 @@
       el.galleryView.classList.add("hidden");
       el.loadingView.classList.remove("hidden");
       el.loadingText.textContent = "구글 드라이브 폴더와 사진 날짜 정보를 불러오는 중...";
-      el.searchInput.value = "";
       renderBreadcrumb();
 
       try {
@@ -1751,15 +1749,8 @@
     }
 
     function renderItems() {
-      const keyword = el.searchInput.value.trim().toLowerCase();
-
-      const visFolders = keyword
-        ? currentFolders.filter(f => f.name.toLowerCase().includes(keyword))
-        : currentFolders;
-
-      let photos = keyword
-        ? currentPhotos.filter(p => p.name.toLowerCase().includes(keyword) || p._dateStr.includes(keyword))
-        : [...currentPhotos];
+      const visFolders = currentFolders;
+      let photos = [...currentPhotos];
 
       if (sortOrder === "date-desc") {
         photos.sort((a, b) => b._timestamp - a._timestamp || a.name.localeCompare(b.name));
@@ -1932,7 +1923,6 @@
     };
     el.btnConfirmFolderSelect.onclick = confirmAndLoadRoot;
     el.btnCancelFolderSelect.onclick = () => el.folderSelectModal.classList.remove("open");
-    el.searchInput.oninput = renderItems;
     el.sortSelect.onchange = () => {
       sortOrder = el.sortSelect.value;
       localStorage.setItem("gd_album_sort_order", sortOrder);
