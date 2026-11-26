@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="드라이브 앨범" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Drive Photo Album (V1.3.0)</title>
+  <title>Drive Photo Album (V1.4.0)</title>
 
   <!-- PWA 아이콘 & Manifest 동적 등록 -->
   <link id="pwa-manifest" rel="manifest" />
@@ -256,11 +256,35 @@
       user-select: none;
     }
 
+    .toolbar-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .sort-select {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .sort-select:focus {
+      border-color: var(--accent);
+    }
+
     .search-box {
       position: relative;
-      min-width: 220px;
+      min-width: 180px;
+      max-width: 280px;
       flex: 1;
-      max-width: 320px;
     }
 
     .search-box input {
@@ -451,6 +475,92 @@
       margin-top: 2px;
     }
 
+    /* 월별 빠른 이동 인덱스 바 */
+    .month-jump-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 18px;
+      scrollbar-width: thin;
+    }
+
+    .month-chip {
+      padding: 5px 11px;
+      border-radius: 999px;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .month-chip:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+      background-color: var(--bg-hover);
+    }
+
+    /* 월별 그룹 섹션 */
+    .month-group {
+      margin-bottom: 30px;
+      scroll-margin-top: 76px;
+    }
+
+    .month-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      background-color: rgba(30, 41, 59, 0.75);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.15s;
+    }
+
+    .month-header:hover {
+      background-color: var(--bg-hover);
+    }
+
+    .month-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .month-toggle-icon {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      transition: transform 0.2s ease;
+    }
+
+    .month-group.collapsed .month-toggle-icon {
+      transform: rotate(-90deg);
+    }
+
+    .month-group.collapsed .photo-grid {
+      display: none;
+    }
+
+    .month-count-badge {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #93c5fd;
+      background-color: rgba(59, 130, 246, 0.15);
+      padding: 2px 9px;
+      border-radius: 999px;
+    }
+
     .photo-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -489,7 +599,7 @@
     .photo-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 45%);
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%);
       opacity: 0;
       transition: opacity 0.2s ease;
       display: flex;
@@ -508,6 +618,12 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .photo-date {
+      font-size: 0.7rem;
+      color: #cbd5e1;
+      margin-top: 2px;
     }
 
     /* Modal */
@@ -721,7 +837,6 @@
       line-height: 1.5;
     }
 
-    /* Footer */
     footer {
       text-align: center;
       padding: 16px;
@@ -833,7 +948,7 @@
           <polyline points="21 15 16 10 5 21"></polyline>
         </svg>
         <span>Drive Photo Album</span>
-        <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.3.0</span>
+        <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.4.0</span>
       </div>
       <div class="header-actions">
         <button id="btnChangeFolder" class="hidden" title="불러올 기준 폴더 변경">📁 폴더 변경</button>
@@ -846,8 +961,15 @@
 
   <div id="toolbar" class="toolbar hidden">
     <nav id="breadcrumb" class="breadcrumb"></nav>
-    <div class="search-box">
-      <input type="text" id="searchInput" placeholder="현재 폴더 내 이름 검색..." />
+    <div class="toolbar-controls">
+      <select id="sortSelect" class="sort-select" title="사진 정렬 방식">
+        <option value="date-desc">📅 최신 날짜순 (월별)</option>
+        <option value="date-asc">📅 오래된 날짜순 (월별)</option>
+        <option value="name-asc">🔤 파일명순</option>
+      </select>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="현재 폴더 내 이름 검색..." />
+      </div>
     </div>
   </div>
 
@@ -862,8 +984,8 @@
           </svg>
         </div>
         <h1>Drive Photo Album</h1>
-        <div class="login-version-tag">Version 1.3.0</div>
-        <p>구글 드라이브에 정리된 사진 폴더를<br>계층 구조 그대로 앨범처럼 열람합니다.<br>한 번 로그인하면 브라우저를 닫아도 유지됩니다.</p>
+        <div class="login-version-tag">Version 1.4.0</div>
+        <p>구글 드라이브에 정리된 사진 폴더를<br>월별 타임라인과 계층 구조 그대로 열람합니다.<br>한 번 로그인하면 브라우저를 닫아도 유지됩니다.</p>
         <button id="btnMainLogin" class="primary btn-google-login">Google 계정으로 로그인</button>
         <div class="login-sub-action">
           읽기 전용 권한(drive.readonly)만 사용하므로 원본 파일은 수정되지 않습니다.
@@ -890,7 +1012,10 @@
           <span>사진</span>
           <span id="photoCount">0장</span>
         </div>
-        <div id="photoGrid" class="photo-grid"></div>
+        <!-- 월별 빠른 이동 칩 -->
+        <div id="monthJumpBar" class="month-jump-bar hidden"></div>
+        <!-- 월별 그룹 컨테이너 -->
+        <div id="photoContainer"></div>
       </div>
 
       <div id="emptyFolderMsg" class="center-box hidden">
@@ -901,7 +1026,7 @@
   </main>
 
   <footer>
-    Drive Photo Album · <span id="footerVersionLink">V1.3.0 업데이트 내역</span>
+    Drive Photo Album · <span id="footerVersionLink">V1.4.0 업데이트 내역</span>
   </footer>
 
   <!-- 폴더 선택 및 계층 탐색 모달 -->
@@ -939,14 +1064,22 @@
   <!-- 버전 정보 모달 -->
   <div id="versionModal" class="modal-backdrop">
     <div class="modal">
-      <h3>Drive Photo Album · V1.3.0</h3>
+      <h3>Drive Photo Album · V1.4.0</h3>
       <p class="modal-desc">Google Drive 폴더 기반 전용 사진 갤러리 PWA 웹 앱입니다.</p>
       <div class="changelog-list">
         <div class="changelog-item">
-          <h4>V1.3.0 (현재 버전)</h4>
+          <h4>V1.4.0 (현재 버전)</h4>
           <ul>
-            <li>헤더·로그인 화면·하단 버전 배지(V1.3.0) 및 업데이트 내역 팝업 추가</li>
-            <li>폴더 선택/변경 창 내 다단계 하위 폴더 탐색(하위 열기 ❯ 및 경로 이동) 지원</li>
+            <li>사진 촬영일(EXIF) 및 생성일 기준 날짜순 자동 정렬(최신순/오래된순/파일명순) 추가</li>
+            <li>연·월별(YYYY년 MM월) 그룹 묶음 보기, 섹션 접기/펼치기 및 상단 월별 빠른 이동 바 지원</li>
+            <li>라이트박스 뷰어 상단에 사진 촬영·등록 날짜 정보 표시</li>
+          </ul>
+        </div>
+        <div class="changelog-item">
+          <h4>V1.3.0</h4>
+          <ul>
+            <li>버전 배지(V1.3.0) 및 업데이트 내역 팝업 추가</li>
+            <li>폴더 선택/변경 창 내 다단계 하위 폴더 탐색(하위 열기 ❯) 지원</li>
             <li>로그인 상태 영구 유지 및 토큰 만료 시 자동 복원 처리</li>
           </ul>
         </div>
@@ -1013,7 +1146,7 @@
   </div>
 
   <script>
-    const APP_VERSION = "V1.3.0";
+    const APP_VERSION = "V1.4.0";
     const DEFAULT_CLIENT_ID = "126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com";
     const SCOPES = "https://www.googleapis.com/auth/drive.readonly";
 
@@ -1023,6 +1156,7 @@
     let wasLoggedIn = localStorage.getItem("gd_album_logged_in") === "true";
     let clientId = localStorage.getItem("gd_album_client_id") || DEFAULT_CLIENT_ID;
     let savedRootFolderId = localStorage.getItem("gd_album_root_id") || "";
+    let sortOrder = localStorage.getItem("gd_album_sort_order") || "date-desc";
 
     let folderStack = [];
     let modalBrowseStack = [{ id: "root", name: "내 드라이브" }];
@@ -1040,13 +1174,15 @@
       galleryView: document.getElementById("galleryView"),
       toolbar: document.getElementById("toolbar"),
       breadcrumb: document.getElementById("breadcrumb"),
+      sortSelect: document.getElementById("sortSelect"),
       searchInput: document.getElementById("searchInput"),
       folderSection: document.getElementById("folderSection"),
       folderGrid: document.getElementById("folderGrid"),
       folderCount: document.getElementById("folderCount"),
       photoSection: document.getElementById("photoSection"),
-      photoGrid: document.getElementById("photoGrid"),
       photoCount: document.getElementById("photoCount"),
+      monthJumpBar: document.getElementById("monthJumpBar"),
+      photoContainer: document.getElementById("photoContainer"),
       emptyFolderMsg: document.getElementById("emptyFolderMsg"),
       btnMainLogin: document.getElementById("btnMainLogin"),
       btnLogout: document.getElementById("btnLogout"),
@@ -1079,11 +1215,46 @@
       lbClose: document.getElementById("lbClose")
     };
 
+    el.sortSelect.value = sortOrder;
+
     function extractFolderId(input) {
       if (!input || !input.trim()) return "root";
       const val = input.trim();
       const match = val.match(/folders\/([a-zA-Z0-9_-]+)/) || val.match(/id=([a-zA-Z0-9_-]+)/);
       return match ? match[1] : val;
+    }
+
+    // EXIF 촬영일시(YYYY:MM:DD HH:MM:SS) 우선, 없으면 파일 생성일/수정일 반환
+    function parsePhotoDate(photo) {
+      const exifTime = photo.imageMediaMetadata && photo.imageMediaMetadata.time;
+      if (exifTime) {
+        const normalized = exifTime.replace(/^(\d{4}):(\d{2}):(\d{2})/, "$1-$2-$3").replace(" ", "T");
+        const d = new Date(normalized);
+        if (!isNaN(d.getTime())) return d;
+      }
+      const fallback = photo.createdTime || photo.modifiedTime;
+      if (fallback) {
+        const d = new Date(fallback);
+        if (!isNaN(d.getTime())) return d;
+      }
+      return new Date(0);
+    }
+
+    function formatDateYMD(dateObj) {
+      if (!dateObj || dateObj.getTime() === 0) return "날짜 미상";
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const d = String(dateObj.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function getMonthKeyAndLabel(dateObj) {
+      if (!dateObj || dateObj.getTime() === 0) {
+        return { key: "unknown", label: "날짜 미상" };
+      }
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+      return { key: `${y}-${m}`, label: `${y}년 ${m}월` };
     }
 
     function isTokenValid() {
@@ -1368,7 +1539,7 @@
     async function loadFolder(folderId) {
       el.galleryView.classList.add("hidden");
       el.loadingView.classList.remove("hidden");
-      el.loadingText.textContent = "구글 드라이브 폴더를 불러오는 중...";
+      el.loadingText.textContent = "구글 드라이브 폴더와 사진 날짜 정보를 불러오는 중...";
       el.searchInput.value = "";
       renderBreadcrumb();
 
@@ -1376,7 +1547,7 @@
         let allItems = [];
         let pageToken = "";
         const q = `'${folderId}' in parents and trashed = false and (mimeType = 'application/vnd.google-apps.folder' or mimeType contains 'image/')`;
-        const fields = "nextPageToken, files(id, name, mimeType, thumbnailLink, webViewLink, createdTime, modifiedTime)";
+        const fields = "nextPageToken, files(id, name, mimeType, thumbnailLink, webViewLink, createdTime, modifiedTime, imageMediaMetadata(time))";
 
         do {
           const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=${encodeURIComponent(fields)}&orderBy=folder,name&pageSize=200${pageToken ? `&pageToken=${pageToken}` : ""}`;
@@ -1386,7 +1557,20 @@
         } while (pageToken);
 
         currentFolders = allItems.filter(f => f.mimeType === "application/vnd.google-apps.folder");
-        currentPhotos = allItems.filter(f => f.mimeType !== "application/vnd.google-apps.folder");
+        currentPhotos = allItems
+          .filter(f => f.mimeType !== "application/vnd.google-apps.folder")
+          .map(p => {
+            const parsedDate = parsePhotoDate(p);
+            const monthInfo = getMonthKeyAndLabel(parsedDate);
+            return {
+              ...p,
+              _parsedDate: parsedDate,
+              _timestamp: parsedDate.getTime(),
+              _dateStr: formatDateYMD(parsedDate),
+              _monthKey: monthInfo.key,
+              _monthLabel: monthInfo.label
+            };
+          });
 
         renderItems();
       } catch (err) {
@@ -1425,6 +1609,21 @@
       return thumbnailLink.replace(/=s\d+$/, `=s${size}`);
     }
 
+    function createPhotoCardElement(photo, globalIdx) {
+      const card = document.createElement("div");
+      card.className = "photo-card";
+      const thumbUrl = getHighResThumbnail(photo.thumbnailLink, 500);
+      card.innerHTML = `
+        <img src="${thumbUrl}" alt="${photo.name}" loading="lazy" />
+        <div class="photo-overlay">
+          <div class="photo-title">${photo.name}</div>
+          <div class="photo-date">${photo._dateStr}</div>
+        </div>
+      `;
+      card.onclick = () => openLightbox(globalIdx);
+      return card;
+    }
+
     function renderItems() {
       const keyword = el.searchInput.value.trim().toLowerCase();
 
@@ -1432,10 +1631,22 @@
         ? currentFolders.filter(f => f.name.toLowerCase().includes(keyword))
         : currentFolders;
 
-      filteredPhotos = keyword
-        ? currentPhotos.filter(p => p.name.toLowerCase().includes(keyword))
-        : currentPhotos;
+      let photos = keyword
+        ? currentPhotos.filter(p => p.name.toLowerCase().includes(keyword) || p._dateStr.includes(keyword))
+        : [...currentPhotos];
 
+      // 정렬 적용
+      if (sortOrder === "date-desc") {
+        photos.sort((a, b) => b._timestamp - a._timestamp || a.name.localeCompare(b.name));
+      } else if (sortOrder === "date-asc") {
+        photos.sort((a, b) => a._timestamp - b._timestamp || a.name.localeCompare(b.name));
+      } else {
+        photos.sort((a, b) => a.name.localeCompare(b.name));
+      }
+
+      filteredPhotos = photos;
+
+      // 폴더 렌더링
       el.folderGrid.innerHTML = "";
       if (visFolders.length > 0) {
         el.folderSection.classList.remove("hidden");
@@ -1463,25 +1674,89 @@
         el.folderSection.classList.add("hidden");
       }
 
-      el.photoGrid.innerHTML = "";
+      // 사진 렌더링 (월별 그룹 또는 단일 그리드)
+      el.photoContainer.innerHTML = "";
+      el.monthJumpBar.innerHTML = "";
+
       if (filteredPhotos.length > 0) {
         el.photoSection.classList.remove("hidden");
         el.photoCount.textContent = `${filteredPhotos.length}장`;
-        filteredPhotos.forEach((photo, idx) => {
-          const card = document.createElement("div");
-          card.className = "photo-card";
-          const thumbUrl = getHighResThumbnail(photo.thumbnailLink, 500);
-          card.innerHTML = `
-            <img src="${thumbUrl}" alt="${photo.name}" loading="lazy" />
-            <div class="photo-overlay">
-              <div class="photo-title">${photo.name}</div>
-            </div>
-          `;
-          card.onclick = () => openLightbox(idx);
-          el.photoGrid.appendChild(card);
-        });
+
+        if (sortOrder === "name-asc") {
+          el.monthJumpBar.classList.add("hidden");
+          const grid = document.createElement("div");
+          grid.className = "photo-grid";
+          filteredPhotos.forEach((photo, idx) => {
+            grid.appendChild(createPhotoCardElement(photo, idx));
+          });
+          el.photoContainer.appendChild(grid);
+        } else {
+          // 월별 그룹핑
+          const groups = [];
+          const groupMap = new Map();
+
+          filteredPhotos.forEach((photo, idx) => {
+            if (!groupMap.has(photo._monthKey)) {
+              const g = { key: photo._monthKey, label: photo._monthLabel, items: [] };
+              groupMap.set(photo._monthKey, g);
+              groups.push(g);
+            }
+            groupMap.get(photo._monthKey).items.push({ photo, globalIdx: idx });
+          });
+
+          // 월별 빠른 이동 칩 바 표시 (2개 이상 월이 있을 때)
+          if (groups.length > 1) {
+            el.monthJumpBar.classList.remove("hidden");
+            groups.forEach(g => {
+              const chip = document.createElement("button");
+              chip.type = "button";
+              chip.className = "month-chip";
+              chip.textContent = `${g.label} (${g.items.length})`;
+              chip.onclick = () => {
+                const targetEl = document.getElementById(`month-sec-${g.key}`);
+                if (targetEl) {
+                  targetEl.classList.remove("collapsed");
+                  targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              };
+              el.monthJumpBar.appendChild(chip);
+            });
+          } else {
+            el.monthJumpBar.classList.add("hidden");
+          }
+
+          // 월별 섹션 렌더링
+          groups.forEach(g => {
+            const section = document.createElement("section");
+            section.className = "month-group";
+            section.id = `month-sec-${g.key}`;
+
+            const header = document.createElement("div");
+            header.className = "month-header";
+            header.title = "클릭하여 접기/펼치기";
+            header.innerHTML = `
+              <div class="month-header-left">
+                <span class="month-toggle-icon">▼</span>
+                <span>${g.label}</span>
+              </div>
+              <span class="month-count-badge">${g.items.length}장</span>
+            `;
+            header.onclick = () => section.classList.toggle("collapsed");
+
+            const grid = document.createElement("div");
+            grid.className = "photo-grid";
+            g.items.forEach(({ photo, globalIdx }) => {
+              grid.appendChild(createPhotoCardElement(photo, globalIdx));
+            });
+
+            section.appendChild(header);
+            section.appendChild(grid);
+            el.photoContainer.appendChild(section);
+          });
+        }
       } else {
         el.photoSection.classList.add("hidden");
+        el.monthJumpBar.classList.add("hidden");
       }
 
       if (visFolders.length === 0 && filteredPhotos.length === 0) {
@@ -1506,7 +1781,7 @@
       const photo = filteredPhotos[currentPhotoIndex];
       if (!photo) return;
       el.lbTitle.textContent = photo.name;
-      el.lbCounter.textContent = `${currentPhotoIndex + 1} / ${filteredPhotos.length}`;
+      el.lbCounter.textContent = `${currentPhotoIndex + 1} / ${filteredPhotos.length}  ·  ${photo._dateStr}`;
       el.lbDriveLink.href = photo.webViewLink || `https://drive.google.com/file/d/${photo.id}/view`;
       el.lbImage.src = getHighResThumbnail(photo.thumbnailLink, 2048);
     }
@@ -1538,6 +1813,11 @@
     el.btnConfirmFolderSelect.onclick = confirmAndLoadRoot;
     el.btnCancelFolderSelect.onclick = () => el.folderSelectModal.classList.remove("open");
     el.searchInput.oninput = renderItems;
+    el.sortSelect.onchange = () => {
+      sortOrder = el.sortSelect.value;
+      localStorage.setItem("gd_album_sort_order", sortOrder);
+      renderItems();
+    };
 
     // 버전 모달 제어
     el.versionBadge.onclick = () => el.versionModal.classList.add("open");
