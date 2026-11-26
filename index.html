@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Drive Album" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Drive Album (V1.6.0)</title>
+  <title>Drive Album (V1.6.1)</title>
 
   <!-- 정적 WebAPK 설치를 위한 실제 manifest.json 및 PNG 아이콘 연결 -->
   <link rel="manifest" href="./manifest.json" />
@@ -876,7 +876,7 @@
         <img src="./icon-192.png" class="brand-icon" alt="Drive Album" />
         <div class="brand-text-wrap">
           <span class="app-title">Drive Album</span>
-          <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.6.0</span>
+          <span id="versionBadge" class="version-badge" title="버전 정보 및 업데이트 내역 보기">V1.6.1</span>
         </div>
       </div>
       <div class="header-actions">
@@ -925,8 +925,8 @@
       <div class="login-card">
         <img src="./icon-512.png" class="login-app-icon" alt="Drive Album" />
         <h1>Drive Album</h1>
-        <div class="login-version-tag">Version 1.6.0</div>
-        <p>구글 드라이브에 정리된 사진 폴더를<br>촬영 날짜 기준 월별 타임라인으로 열람합니다.<br>한 번 로그인하면 브라우저를 닫아도 유지됩니다.</p>
+        <div class="login-version-tag">Version 1.6.1</div>
+        <p>구글 드라이브에 정리된 사진 폴더를<br>촬영 날짜 기준 월별 타임라인으로 열람합니다.<br>아래 버튼을 누르면 Google 로그인 창이 열립니다.</p>
         <button id="btnMainLogin" class="primary btn-google-login">Google 계정으로 로그인</button>
         <div class="login-sub-action">
           읽기 전용 권한(drive.readonly)만 사용하므로 원본 파일은 수정되지 않습니다.
@@ -965,7 +965,7 @@
   </main>
 
   <footer>
-    Drive Album · <span id="footerVersionLink">V1.6.0 업데이트 내역</span>
+    Drive Album · <span id="footerVersionLink">V1.6.1 업데이트 내역</span>
   </footer>
 
   <!-- 폴더 선택 및 계층 탐색 모달 -->
@@ -1003,26 +1003,26 @@
   <!-- 버전 정보 모달 -->
   <div id="versionModal" class="modal-backdrop">
     <div class="modal">
-      <h3>Drive Album · V1.6.0</h3>
+      <h3>Drive Album · V1.6.1</h3>
       <p class="modal-desc">Google Drive 폴더 기반 사진 갤러리 WebAPK 앱입니다.</p>
       <div class="changelog-list">
         <div class="changelog-item">
-          <h4>V1.6.0 (현재 버전)</h4>
+          <h4>V1.6.1 (현재 버전)</h4>
           <ul>
-            <li>사진 열람 및 그룹 분류 기준을 업로드 날짜가 아닌 <b>실제 촬영 시점(EXIF 원본 촬영일 → 파일명 내 촬영일시 패턴)</b> 우선으로 강화</li>
-            <li>앱 이름을 <b>Drive Album</b>으로 변경하고 상단 타이틀 바로 아래에 버전 배지(<code>V1.6.0</code>) 배치</li>
+            <li>사이트 접속 시 자동으로 로그인 팝업이 열리지 않고, 사용자가 직접 <b>Google 계정으로 로그인</b> 버튼을 눌렀을 때만 로그인 창이 뜨도록 수정</li>
+          </ul>
+        </div>
+        <div class="changelog-item">
+          <h4>V1.6.0</h4>
+          <ul>
+            <li>사진 열람 및 그룹 분류 기준을 실제 촬영 시점(EXIF 원본 촬영일 → 파일명 내 촬영일시 패턴) 우선으로 강화</li>
+            <li>앱 이름을 <b>Drive Album</b>으로 변경하고 상단 타이틀 바로 아래에 버전 배지 배치</li>
           </ul>
         </div>
         <div class="changelog-item">
           <h4>V1.5.1</h4>
           <ul>
             <li>정적 <code>manifest.json</code>, 서비스 워커(<code>sw.js</code>), 실제 PNG 아이콘 연결로 Android Chrome 정식 앱 설치 지원</li>
-          </ul>
-        </div>
-        <div class="changelog-item">
-          <h4>V1.4.0 ~ V1.5.0</h4>
-          <ul>
-            <li>입체 폴라로이드 아이콘 디자인, 연·월별 그룹 묶음 보기 및 상단 아이콘 버튼 UI 개편</li>
           </ul>
         </div>
       </div>
@@ -1076,7 +1076,7 @@
       });
     }
 
-    const APP_VERSION = "V1.6.0";
+    const APP_VERSION = "V1.6.1";
     const DEFAULT_CLIENT_ID = "126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com";
     const SCOPES = "https://www.googleapis.com/auth/drive.readonly";
 
@@ -1153,17 +1153,14 @@
       return match ? match[1] : val;
     }
 
-    // 파일명에서 촬영 날짜/시간 추출 (예: 20261125_143022.jpg, IMG_20261125_143022.jpg, 2026-11-25 14.30.22.png, KakaoTalk_20261125_143022123.jpg)
     function extractDateFromFilename(filename) {
       if (!filename) return null;
-      // 1. YYYYMMDD_HHMMSS 또는 YYYY-MM-DD HH:MM:SS 등 시분초까지 있는 경우
       const fullMatch = filename.match(/(?:^|[^0-9])(20\d{2}|19\d{2})[-_.]?(0[1-9]|1[0-2])[-_.]?(0[1-9]|[12]\d|3[01])[-_ T.]?([01]\d|2[0-3])[-_.]?([0-5]\d)[-_.]?([0-5]\d)(?:[^0-9]|$)/);
       if (fullMatch) {
         const [, y, m, d, hh, mm, ss] = fullMatch;
         const dt = new Date(Number(y), Number(m) - 1, Number(d), Number(hh), Number(mm), Number(ss));
         if (!isNaN(dt.getTime())) return { date: dt, hasTime: true };
       }
-      // 2. YYYYMMDD 또는 YYYY-MM-DD 날짜만 있는 경우
       const dateOnlyMatch = filename.match(/(?:^|[^0-9])(20\d{2}|19\d{2})[-_.]?(0[1-9]|1[0-2])[-_.]?(0[1-9]|[12]\d|3[01])(?:[^0-9]|$)/);
       if (dateOnlyMatch) {
         const [, y, m, d] = dateOnlyMatch;
@@ -1173,14 +1170,9 @@
       return null;
     }
 
-    // 촬영 시점 파싱 우선순위:
-    // 1순위: EXIF 원본 촬영일시 (imageMediaMetadata.time)
-    // 2순위: 파일명 내 촬영일시 패턴 (스마트폰/카메라 기본 파일명)
-    // 3순위: Drive 파일 생성일/수정일 (createdTime / modifiedTime)
     function parsePhotoCaptureInfo(photo) {
       const exifTime = photo.imageMediaMetadata && photo.imageMediaMetadata.time;
       if (exifTime) {
-        // EXIF 포맷 예: "2026:11:25 14:32:10"
         const m = exifTime.match(/^(\d{4}):(\d{2}):(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
         if (m) {
           const dt = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6]));
@@ -1273,19 +1265,21 @@
         }
       });
 
+      // 이미 유효한 토큰이 남아있을 때만 팝업 없이 즉시 복원하고,
+      // 만료되었거나 미로그인 상태에서는 자동으로 팝업을 띄우지 않고 로그인 버튼 클릭을 대기함
       if (isTokenValid()) {
         onAutoResumeLogin();
-      } else if (wasLoggedIn) {
-        el.loginView.classList.add("hidden");
-        el.loadingView.classList.remove("hidden");
-        el.loadingText.textContent = "로그인 세션을 자동으로 복원하는 중...";
-        pendingSilentAction = () => onAutoResumeLogin();
-        tokenClient.requestAccessToken({ prompt: "" });
+      } else {
+        el.loadingView.classList.add("hidden");
+        el.loginView.classList.remove("hidden");
       }
     }
 
     function handleLogin() {
-      if (!tokenClient) return;
+      if (!tokenClient) {
+        alert("Google 로그인 모듈을 불러오는 중입니다. 잠시 후 다시 눌러주세요.");
+        return;
+      }
       pendingSilentAction = null;
       tokenClient.requestAccessToken({ prompt: "" });
     }
